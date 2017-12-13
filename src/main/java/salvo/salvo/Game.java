@@ -29,15 +29,11 @@ public class Game {
         games.add(game_player);
     }
 
-    public long getGameId() {
-        return game_id;
+    public Set<GamePlayer> getGames() {
+        return games;
     }
 
-    public List<Object> getPlayers() {
-
-        return games
-                .stream()
-                .map(sub -> sub.getGamePlayerInfo())
-                .collect(Collectors.toList());
+    public long getGameId() {
+        return game_id;
     }
 }

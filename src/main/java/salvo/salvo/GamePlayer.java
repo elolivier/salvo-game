@@ -3,6 +3,7 @@ package salvo.salvo;
 import java.time.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import javax.persistence.*;
 
 @Entity
@@ -18,6 +19,18 @@ public class GamePlayer {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="game_id")
     private Game game;
+
+    @OneToMany(mappedBy = "gp", fetch = FetchType.EAGER)
+    Set<Ship> ships;
+
+    public void addShip(Ship ship) {
+        ship.setGamePlayer(this);
+        ships.add(ship);
+    }
+
+    public Set<Ship> getShips() {
+        return ships;
+    }
 
     public GamePlayer() { }
 
@@ -47,19 +60,6 @@ public class GamePlayer {
 
     public long getGamePlayerId() {
         return game_player_id;
-    }
-
-    public Object getGamePlayerInfo() {
-        Object game_player_info;
-        game_player_info = gamePlayerDTO(this);
-        return game_player_info;
-    }
-
-    private Map<String, Object> gamePlayerDTO(GamePlayer game_player) {
-        Map<String, Object> dto = new LinkedHashMap<>();
-        dto.put("id", game_player.getGamePlayerId());
-        dto.put("player", game_player.getPlayer());
-        return dto;
     }
 
     public LocalDateTime getUserJoinDate() {
