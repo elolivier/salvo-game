@@ -59,6 +59,10 @@ public class SalvoController {
                 .stream()
                 .map(ship -> shipsDTO(ship))
                 .collect(Collectors.toList()));
+        dto.put("salvos", gpOfId.getSalvos()
+                .stream()
+                .map(salvo -> salvosDTO(salvo))
+                .collect(Collectors.toList()));
         return dto;
     }
 
@@ -71,6 +75,15 @@ public class SalvoController {
         Map<String, Object> dto = new LinkedHashMap<>();
         dto.put("type", ship.getShipType());
         dto.put("locations", ship.getLocations());
+        return dto;
+    }
+
+    //-------------------TASK 4--------------------
+
+    private Map<String, Object> salvosDTO(Salvo salvo) {
+        Map<String, Object> dto = new LinkedHashMap<>();
+        dto.put("turn", salvo.getTurn());
+        dto.put("locations", salvo.getSalvo_locations());
         return dto;
     }
 }

@@ -18,7 +18,8 @@ public class SalvoApplication {
 	public CommandLineRunner initData(PlayerRepository repPlayer,
                                       GameRepository repGame,
                                       GamePlayerRepository repGamePlayer,
-                                      ShipRepository repShip) {
+                                      ShipRepository repShip,
+                                      SalvoRepository repSalvo) {
 		return (args) -> {
             Player player1 = new Player("t.almeida@ctu.gov","Tony", "Almeida");
             Player player2 = new Player("j.bauer@ctu.gov","Jack", "Bauer");
@@ -36,6 +37,8 @@ public class SalvoApplication {
             Ship ship1 = new Ship("Battleship", sh1_loc, gamePlayer2);
             Ship ship2 = new Ship("Destroyer", sh2_loc, gamePlayer4);
             Ship ship3 = new Ship("Battleship", sh3_loc, gamePlayer4);
+            List<String> sal1_loc = new ArrayList<>(Arrays.asList("B2", "D4"));
+            Salvo salvo1_1 = new Salvo(1, sal1_loc, gamePlayer2);
 			repPlayer.save(player1);
             repPlayer.save(player2);
 			repPlayer.save(player3);
@@ -49,6 +52,7 @@ public class SalvoApplication {
 			repShip.save(ship1);
             repShip.save(ship2);
             repShip.save(ship3);
+            repSalvo.save(salvo1_1);
 		};
 	}
 }
