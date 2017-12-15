@@ -37,8 +37,14 @@ public class SalvoApplication {
             Ship ship1 = new Ship("Battleship", sh1_loc, gamePlayer2);
             Ship ship2 = new Ship("Destroyer", sh2_loc, gamePlayer4);
             Ship ship3 = new Ship("Battleship", sh3_loc, gamePlayer4);
-            List<String> sal1_loc = new ArrayList<>(Arrays.asList("B2", "D4"));
-            Salvo salvo1_1 = new Salvo(1, sal1_loc, gamePlayer2);
+            List<String> sal1_loc1_1 = new ArrayList<>(Arrays.asList("B2", "D4"));
+            List<String> sal1_loc2_1 = new ArrayList<>(Arrays.asList("F6", "H3"));
+            List<String> sal1_loc1_2 = new ArrayList<>(Arrays.asList("A1", "G5"));
+            List<String> sal1_loc2_2 = new ArrayList<>(Arrays.asList("C7", "H9"));
+            Salvo salvo1_1 = new Salvo(1, sal1_loc1_1, gamePlayer1);
+            Salvo salvo1_2 = new Salvo(1, sal1_loc2_1, gamePlayer2);
+            Salvo salvo1_3 = new Salvo(2, sal1_loc1_2, gamePlayer1);
+            Salvo salvo1_4 = new Salvo(2, sal1_loc2_2, gamePlayer2);
 			repPlayer.save(player1);
             repPlayer.save(player2);
 			repPlayer.save(player3);
@@ -53,6 +59,9 @@ public class SalvoApplication {
             repShip.save(ship2);
             repShip.save(ship3);
             repSalvo.save(salvo1_1);
+            repSalvo.save(salvo1_2);
+            repSalvo.save(salvo1_3);
+            repSalvo.save(salvo1_4);
 		};
 	}
 }
