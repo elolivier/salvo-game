@@ -59,10 +59,7 @@ public class SalvoController {
                 .stream()
                 .map(ship -> shipsDTO(ship))
                 .collect(Collectors.toList()));
-        dto.put("salvos", gpOfId.getSalvos()
-                .stream()
-                .map(salvo -> salvosDTO(salvo))
-                .collect(Collectors.toList()));
+        dto.put("salvos", getTurnsMap(gpOfId, gpOfId.getGame().getGames())); //MAP OF TURN:OBJECT
         return dto;
     }
 
@@ -79,11 +76,63 @@ public class SalvoController {
     }
 
     //-------------------TASK 4--------------------
+    //This function should return an object Turn:Object
+    private Map<Long, Object> getTurnsMap(GamePlayer gpOfId, Set<GamePlayer> bothGps) {
+        Map<Long, Object> turnObject = new LinkedHashMap<>();
+        Long turns = (long) getTurnsQuantity(bothGps);
+        for (Long i = 1L; i <= turns; i++) {
+            turnObject.put(i, getMapPlayers(i,bothGps,gpOfId));
+        }
+        return turnObject;
+    }
 
-    private Map<String, Object> salvosDTO(Salvo salvo) {
-        Map<String, Object> dto = new LinkedHashMap<>();
-        dto.put("turn", salvo.getTurn());
-        dto.put("locations", salvo.getSalvo_locations());
-        return dto;
+    //This function should return an object {PlayerId1:Locations1, PlayerId2:Locations2}
+    private Map<Long, Object> getMapPlayers(Long turn, Set<GamePlayer> bothGps, GamePlayer gpOfId) {
+        Map<Long, Object> eachPlayerPerTurn=new LinkedHashMap<>();
+        eachPlayerPerTurn.put(gpOfId.getPlayer().getPlayerId(),getSalvoLocations(turn, gpOfId));
+        GamePlayer opponent = getOpponent(bothGps, gpOfId.getGamePlayerId());
+        if (opponent != null){
+            eachPlayerPerTurn.put(opponent.getPlayer().getPlayerId(),getSalvoLocations(turn, opponent));
+        }
+        return eachPlayerPerTurn;
+    }
+
+    //This function return the GamePlayer of the opponent
+    private GamePlayer getOpponent(Set<GamePlayer> bothGps, Long ownerId) {
+        GamePlayer opponent = new GamePlayer();
+        for (GamePlayer eachGp:bothGps
+             ) {
+            if (eachGp.getGamePlayerId() != ownerId) {
+                opponent = eachGp;
+            } else {
+                opponent = null;
+            }
+        }
+        return opponent;
+    }
+
+    //This function return Salvo Locations for a turn and GamePlayer give it
+    private List<String> getSalvoLocations(Long turn, GamePlayer gp) {
+        List<String> locations;
+        List<Salvo> salvoList = new ArrayList<>(gp.getSalvos());
+        Salvo thisTurnSalvo = salvoList.get((int) (turn-1));
+        locations = thisTurnSalvo.getSalvo_locations();
+        return locations;
+    }
+
+    //This function return the quantity of turns played in a game
+    private int getTurnsQuantity(Set<GamePlayer> bothGp) {
+        int turns=0;
+        List<GamePlayer> list = new ArrayList<>(bothGp);
+        if (list.size()>1) {
+            if (list.get(0).getSalvos().size() >= list.get(1).getSalvos().size()) {
+                turns = list.get(0).getSalvos().size();
+            } else {
+                turns = list.get(1).getSalvos().size();
+            }
+        } else {
+            list.get(0).getSalvos().size();
+        }
+        return turns;
     }
 }
