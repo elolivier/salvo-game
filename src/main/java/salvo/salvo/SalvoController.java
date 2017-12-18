@@ -99,13 +99,10 @@ public class SalvoController {
 
     //This function return the GamePlayer of the opponent
     private GamePlayer getOpponent(Set<GamePlayer> bothGps, Long ownerId) {
-        GamePlayer opponent = new GamePlayer();
-        for (GamePlayer eachGp:bothGps
-             ) {
+        GamePlayer opponent = null;
+        for (GamePlayer eachGp:bothGps) {
             if (eachGp.getGamePlayerId() != ownerId) {
                 opponent = eachGp;
-            } else {
-                opponent = null;
             }
         }
         return opponent;
@@ -113,10 +110,13 @@ public class SalvoController {
 
     //This function return Salvo Locations for a turn and GamePlayer give it
     private List<String> getSalvoLocations(Long turn, GamePlayer gp) {
-        List<String> locations;
-        List<Salvo> salvoList = new ArrayList<>(gp.getSalvos());
-        Salvo thisTurnSalvo = salvoList.get((int) (turn-1));
-        locations = thisTurnSalvo.getSalvo_locations();
+        List<String> locations = null;
+        for (Salvo salvo:gp.getSalvos()
+             ) {
+            if (salvo.getTurn() == turn) {
+                locations = salvo.getSalvo_locations();
+            }
+        }
         return locations;
     }
 
@@ -135,4 +135,7 @@ public class SalvoController {
         }
         return turns;
     }
+
+    //-------------------TASK 5--------------------
+
 }
