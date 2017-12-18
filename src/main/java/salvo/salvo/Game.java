@@ -1,5 +1,7 @@
 package salvo.salvo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.time.*;
 import java.util.List;
 import java.util.Set;
@@ -35,5 +37,17 @@ public class Game {
 
     public long getGameId() {
         return game_id;
+    }
+
+    @OneToMany(mappedBy = "game", fetch = FetchType.EAGER)
+    Set<Score> scores;
+
+    public void addScore(Score score) {
+        score.setGame(this);
+        scores.add(score);
+    }
+    @JsonIgnore
+    public Set<Score> getScores() {
+        return scores;
     }
 }

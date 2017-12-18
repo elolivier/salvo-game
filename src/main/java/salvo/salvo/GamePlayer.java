@@ -1,5 +1,7 @@
 package salvo.salvo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.time.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -80,5 +82,10 @@ public class GamePlayer {
 
     public void setUserJoinDate(LocalDateTime userJoinDate) {
         this.userJoinDate = userJoinDate;
+    }
+    @JsonIgnore
+    public Double getScore() {
+        Double score = this.getPlayer().getScore(this.getGame());
+        return score;
     }
 }

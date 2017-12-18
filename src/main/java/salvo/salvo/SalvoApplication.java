@@ -19,7 +19,8 @@ public class SalvoApplication {
                                       GameRepository repGame,
                                       GamePlayerRepository repGamePlayer,
                                       ShipRepository repShip,
-                                      SalvoRepository repSalvo) {
+                                      SalvoRepository repSalvo,
+                                      ScoreRepository repScore) {
 		return (args) -> {
             Player player1 = new Player("t.almeida@ctu.gov","Tony", "Almeida");
             Player player2 = new Player("j.bauer@ctu.gov","Jack", "Bauer");
@@ -47,6 +48,9 @@ public class SalvoApplication {
             Salvo salvo1_2 = new Salvo(1, sal1_loc2_1, gamePlayer2);
             Salvo salvo1_3 = new Salvo(2, sal1_loc1_2, gamePlayer1);
             Salvo salvo1_4 = new Salvo(2, sal1_loc2_2, gamePlayer2);
+            Score score1 = new Score(game1, player1, 1.0);
+            Score score2 = new Score(game2, player4, 0.0);
+            Score score3 = new Score(game1, player2, 0.5);
 			repPlayer.save(player1);
             repPlayer.save(player2);
 			repPlayer.save(player3);
@@ -66,6 +70,9 @@ public class SalvoApplication {
             repSalvo.save(salvo1_2);
             repSalvo.save(salvo1_3);
             repSalvo.save(salvo1_4);
+            repScore.save(score1);
+            repScore.save(score2);
+            repScore.save(score3);
 		};
 	}
 }

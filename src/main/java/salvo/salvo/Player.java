@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Entity
@@ -57,6 +58,32 @@ public class Player {
     public void addGamePlayer(GamePlayer game_player) {
         game_player.setPlayer(this);
         games.add(game_player);
+    }
+
+    @OneToMany(mappedBy = "player", fetch = FetchType.EAGER)
+    Set<Score> scores;
+
+    public void addScore(Score score) {
+        score.setPlayer(this);
+        scores.add(score);
+    }
+    @JsonIgnore
+    public Set<Score> getScores() {
+        return scores;
+    }
+
+    public Double getScore(Game game) {
+        Double score;
+        List<Score> scoreFilter2 = scores.stream()
+                .filter(scoreTest -> scoreTest.getPlayer().equals(this)
+                        && scoreTest.getGame().equals(game))
+                .collect(Collectors.toList());
+        if(scoreFilter2.size() < 1) {
+            score = null;
+        } else {
+            score = scoreFilter2.get(0).getScore();
+        }
+        return score;
     }
 
     @JsonIgnore

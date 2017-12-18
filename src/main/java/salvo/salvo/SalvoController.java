@@ -39,6 +39,7 @@ public class SalvoController {
         Map<String, Object> dto = new LinkedHashMap<>();
         dto.put("game_player_id", game_player.getGamePlayerId());
         dto.put("player", game_player.getPlayer());
+        dto.put("score", game_player.getScore());
         return dto;
     }
 //-------------------TASK 3--------------------
@@ -135,7 +136,4 @@ public class SalvoController {
         }
         return turns;
     }
-
-    //-------------------TASK 5--------------------
-
 }
