@@ -1,6 +1,7 @@
 $(function () {
-    //Filling Grid
-    $("#grid-table").append(drawGrid());
+    //Filling Grids
+    $("#grid-ships").append(drawGrid());
+    $("#grid-salvos").append(drawGrid());
 
     //Getting GamePlayer parameter from URL
     let gpId = $.urlParam('gp');
@@ -10,10 +11,10 @@ $(function () {
     $.getJSON(loader, function(data) {
         let dataGame = data;
         let dataShips = dataGame.ships;
-
-        paintShips(dataShips);
-
         $("#info-game").append(paintInfoPlayers(dataGame, gpId));
+        paintShips(dataShips);
+        paintSalvos(dataGame.salvos, gpId, dataShips);
+
     });
 });
 
@@ -29,16 +30,18 @@ function paintInfoPlayers(dataGame, gpId) {
             opponentName = gp.player.userName;
         }
     });
-    infoPlayers += yourName + ' (you) vs. ' + opponentName + '</p>';
+    infoPlayers += yourName + ' (you) <b>vs</b> ' + opponentName + '</p>';
     return infoPlayers;
 }
 
 function drawGrid() {
     let grid = "";
     let rows = ["","A","B","C","D","E","F","G","H","I","J"];
+    grid += "<tbody>";
     $(rows).each(function(i, rowName) {
         grid += "<tr>" + getRow(i, rowName) + "</tr>";
     });
+    grid += "</tbody>";
     return grid;
 }
 
@@ -49,7 +52,7 @@ function getRow(i, rowName) {
         if(i == 0) {
             row += '<td>' + j + '</td>';
         } else {
-            row += '<td id="' + rowName + j + '"></td>';
+            row += '<td class="' + rowName + j + '"></td>';
         }
     }
     return row;
@@ -69,7 +72,44 @@ function paintShips(dataShips) {
     $(dataShips).each(function(i, ship) {
         let dataLocation = ship.locations;
         $(dataLocation).each(function(j, cell) {
-            $('#' + cell).css('background-color', 'blue');
+            let selectTable = "#grid-ships " + "."+cell;
+            $(selectTable).css('background-color', 'blue');
+        });
+    });
+}
+
+function paintSalvos(dataSalvos, ownerId, dataShips) {
+    for (const [turn, val] of Object.entries(dataSalvos)) {
+        let owner = false;
+        for (const [playerId, locations] of Object.entries(val)) {
+            if (playerId == ownerId) {
+                $(locations).each(function(i, cell) {
+                    let selectTable = "#grid-salvos " + "."+cell;
+                    $(selectTable).css('background-color', 'green');
+                    $(selectTable).append(turn);
+                });
+            } else {
+//                $(locations).each(function(i, cell) {
+//                    let selectTable = "#grid-ships " + "."+cell;
+//                    $(selectTable).css('background-color', 'green');
+//                    $(selectTable).append(turn);
+//                });
+                hitShip(turn, locations, dataShips);
+            }
+        }
+    }
+}
+
+function hitShip(turn, locations, dataShips) {
+    $(dataShips).each(function(i, ship) {
+        $(ship.locations).each(function(j, cellShip) {
+            $(locations).each(function(k, cellSalvo) {
+                if (cellShip == cellSalvo) {
+                    let selectTable = "#grid-ships " + "."+cellShip;
+                    $(selectTable).css('background-color', 'red');
+                    $(selectTable).html(turn);
+                }
+            });
         });
     });
 }

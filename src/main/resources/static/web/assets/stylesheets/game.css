@@ -1,5 +1,7 @@
 table td {
     border: 1px solid black;
-    width: 15px;
-    height: 15px;
+}
+
+table {
+    border: 2px solid black;
 }

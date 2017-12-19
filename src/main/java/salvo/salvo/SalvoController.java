@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @RestController
@@ -135,5 +136,38 @@ public class SalvoController {
             list.get(0).getSalvos().size();
         }
         return turns;
+    }
+
+    //-------------------TASK 5--------------------
+    @Autowired
+    PlayerRepository repoPlayer;
+
+    @RequestMapping("/leaderboard")
+    public List<Object> getApiLeaderboard() {
+        return repoPlayer
+                .findAll()
+                .stream()
+                .map(player -> boardDTO(player))
+                .collect(Collectors.toList());
+    }
+
+    private Map<String, Object> boardDTO(Player player) {
+        Map<String, Object> dto = new LinkedHashMap<>();
+        dto.put("player", player.getUserName());
+        dto.put("scores", getPlayerScores(player.getScores()));
+        return dto;
+    }
+
+    private Map<String, Object> getPlayerScores(Set<Score> scores) {
+        Map<String, Object> scoreMap = new LinkedHashMap<>();
+        Predicate<Score> filterWon = score -> score.getScore().equals(1.0);
+        Predicate<Score> filterTied = score -> score.getScore().equals(0.5);
+        Predicate<Score> filterLost = score -> score.getScore().equals(0.0);
+        scoreMap.put("won", scores.stream().filter(filterWon).count());
+        scoreMap.put("lost", scores.stream().filter(filterLost).count());
+        scoreMap.put("tied", scores.stream().filter(filterTied).count());
+        scoreMap.put("score", (scores.stream().filter(filterWon).count())*1.0 +
+                (scores.stream().filter(filterTied).count())*0.5);
+        return scoreMap;
     }
 }

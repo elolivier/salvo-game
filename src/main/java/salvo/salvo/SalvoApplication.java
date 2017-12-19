@@ -28,10 +28,13 @@ public class SalvoApplication {
             Player player4 = new Player("kim_bauer@gmail.com","Kim", "Bauer");
             Game game1 = new Game();
             Game game2 = new Game();
+            Game game3 = new Game();
             GamePlayer gamePlayer1 = new GamePlayer(game1, player1);
             GamePlayer gamePlayer2 = new GamePlayer(game1, player2);
             GamePlayer gamePlayer3 = new GamePlayer(game2, player3);
             GamePlayer gamePlayer4 = new GamePlayer(game2, player4);
+            GamePlayer gamePlayer5 = new GamePlayer(game3, player2);
+            GamePlayer gamePlayer6 = new GamePlayer(game3, player3);
             List<String> sh1_loc = new ArrayList<>(Arrays.asList("E1", "E2", "E3", "E4"));
             List<String> sh2_loc = new ArrayList<>(Arrays.asList("C2", "C3", "C4"));
             List<String> sh3_loc = new ArrayList<>(Arrays.asList("A1", "A2", "A3", "A4"));
@@ -49,18 +52,24 @@ public class SalvoApplication {
             Salvo salvo1_3 = new Salvo(2, sal1_loc1_2, gamePlayer1);
             Salvo salvo1_4 = new Salvo(2, sal1_loc2_2, gamePlayer2);
             Score score1 = new Score(game1, player1, 1.0);
-            Score score2 = new Score(game2, player4, 0.0);
-            Score score3 = new Score(game1, player2, 0.5);
+            Score score2 = new Score(game1, player2, 0.0);
+            Score score3 = new Score(game2, player3, 0.5);
+            Score score4 = new Score(game2, player4, 0.5);
+            Score score5 = new Score(game3, player2, 0.0);
+            Score score6 = new Score(game3, player3, 1.0);
 			repPlayer.save(player1);
             repPlayer.save(player2);
 			repPlayer.save(player3);
 			repPlayer.save(player4);
 			repGame.save(game1);
             repGame.save(game2);
+            repGame.save(game3);
             repGamePlayer.save(gamePlayer1);
             repGamePlayer.save(gamePlayer2);
 			repGamePlayer.save(gamePlayer3);
 			repGamePlayer.save(gamePlayer4);
+            repGamePlayer.save(gamePlayer5);
+            repGamePlayer.save(gamePlayer6);
 			repShip.save(ship1);
             repShip.save(ship2);
             repShip.save(ship3);
@@ -73,6 +82,9 @@ public class SalvoApplication {
             repScore.save(score1);
             repScore.save(score2);
             repScore.save(score3);
+            repScore.save(score4);
+            repScore.save(score5);
+            repScore.save(score6);
 		};
 	}
 }
