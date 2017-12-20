@@ -31,14 +31,13 @@ $(function () {
             + '<td>' + eachPlayer.won + '</td>' + '<td>' + eachPlayer.lost + '</td>' + '<td>' + eachPlayer.tied + '</td>');
         });
         $("#leader-board").append('</tbody>');
-        sortTable();
         $("#leader-board > tbody > tr > td:not(:first-child)").addClass('text-center');
         $("#leader-board > thead > tr > th:not(:first-child)").addClass('text-center');
         $('#leader-board').DataTable({
             "scrollY": "190px",
             "dom": "ft",
             "ordering": true,
-            "order": [],
+            "order": [1, 'desc'],
             "columnDefs": [
             { "width": "40%", "targets": 0 }
             ],
@@ -61,55 +60,4 @@ function getPlayers(game) {
     let gamePlayers = "";
     gamePlayers += game.gamePlayers[0].player.userName + " <b>vs</b> " + game.gamePlayers[1].player.userName;
     return gamePlayers;
-}
-
-function sortTable(){
-	var rows = $('#leader-board tbody  tr').get();
-    rows.sort(function(a, b) {
-    var A = $(a).children('td').eq(1).text().toUpperCase();
-    var B = $(b).children('td').eq(1).text().toUpperCase();
-	if(A > B) {
-	    return -1;
-	}
-	if(A < B) {
-	    return 1;
-	}
-	    return 0;
-	});
-    $.each(rows, function(index, row) {
-        $('#leader-board').children('tbody').append(row);
-    });
-}
-
-function searchEngine() {
-    var qsRegex;
-
-    // init Isotope
-    var $grid = jQuery('.grid').isotope({
-      itemSelector: '.grid-item',
-      filter: function() {
-        return qsRegex ? jQuery(this).text().match( qsRegex ) : true;
-      }
-    });
-
-    // use value of search field to filter
-    var $quicksearch = jQuery('.quicksearch').keyup( debounce( function() {
-      qsRegex = new RegExp( $quicksearch.val(), 'gi' );
-      $grid.isotope();
-    }, 200 ) );
-
-    // debounce so filtering doesn't happen every millisecond
-    function debounce( fn, threshold ) {
-      var timeout;
-      return function debounced() {
-        if ( timeout ) {
-          clearTimeout( timeout );
-        }
-        function delayed() {
-          fn();
-          timeout = null;
-        }
-        timeout = setTimeout( delayed, threshold || 100 );
-      }
-    }
 }

@@ -88,4 +88,19 @@ public class GamePlayer {
         Double score = this.getPlayer().getScore(this.getGame());
         return score;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        GamePlayer that = (GamePlayer) o;
+
+        return game_player_id == that.game_player_id;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) (game_player_id ^ (game_player_id >>> 32));
+    }
 }

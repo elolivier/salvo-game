@@ -113,8 +113,7 @@ public class SalvoController {
     //This function return Salvo Locations for a turn and GamePlayer give it
     private List<String> getSalvoLocations(Long turn, GamePlayer gp) {
         List<String> locations = null;
-        for (Salvo salvo:gp.getSalvos()
-             ) {
+        for (Salvo salvo:gp.getSalvos()) {
             if (salvo.getTurn() == turn) {
                 locations = salvo.getSalvo_locations();
             }
@@ -122,19 +121,14 @@ public class SalvoController {
         return locations;
     }
 
-    //This function return the quantity of turns played in a game
+    //This function returns the quantity of turns played in a game
     private int getTurnsQuantity(Set<GamePlayer> bothGp) {
-        int turns=0;
-        List<GamePlayer> list = new ArrayList<>(bothGp);
-        if (list.size()>1) {
-            if (list.get(0).getSalvos().size() >= list.get(1).getSalvos().size()) {
-                turns = list.get(0).getSalvos().size();
-            } else {
-                turns = list.get(1).getSalvos().size();
-            }
-        } else {
-            list.get(0).getSalvos().size();
-        }
+        int turns;
+        turns = bothGp.stream()
+                .max(Comparator.comparingInt(gp -> gp.getSalvos().size()))
+                .get()
+                .getSalvos()
+                .size();
         return turns;
     }
 
