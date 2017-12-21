@@ -99,24 +99,34 @@ public class SalvoController {
         return eachPlayerPerTurn;
     }
 
-    //This function return the GamePlayer of the opponent
+    //This function return the GamePlayer of the opponent or null
     private GamePlayer getOpponent(Set<GamePlayer> bothGps, Long ownerId) {
-        GamePlayer opponent = null;
-        for (GamePlayer eachGp:bothGps) {
-            if (eachGp.getGamePlayerId() != ownerId) {
-                opponent = eachGp;
-            }
+        Predicate<GamePlayer> isOpponent = gamePlayer -> gamePlayer.getGamePlayerId() != ownerId;
+        Optional<GamePlayer> returnGp = bothGps
+                .stream()
+                .filter(isOpponent)
+                .findAny();
+        GamePlayer opponent;
+        try {
+            opponent = returnGp.get();
+        } catch (Exception e) {
+            opponent = null;
         }
         return opponent;
     }
 
     //This function return Salvo Locations for a turn and GamePlayer give it
     private List<String> getSalvoLocations(Long turn, GamePlayer gp) {
-        List<String> locations = null;
-        for (Salvo salvo:gp.getSalvos()) {
-            if (salvo.getTurn() == turn) {
-                locations = salvo.getSalvo_locations();
-            }
+        Predicate<Salvo> isTurn = salvo -> salvo.getTurn() == turn;
+        Optional<Salvo> returnSalvo = gp.getSalvos()
+                .stream()
+                .filter(isTurn)
+                .findAny();
+        List<String> locations;
+        try {
+            locations = returnSalvo.get().getSalvo_locations();
+        } catch (Exception NoSuchElementException) {
+            locations = null;
         }
         return locations;
     }

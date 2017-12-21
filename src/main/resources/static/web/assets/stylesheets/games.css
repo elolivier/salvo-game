@@ -1,3 +1,21 @@
-#leader-board td {
+body {
+    background-image: url('../images/vikings_home2.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+}
 
+table,
+table.dataTable tbody tr{
+    background:rgba(255,255,255,0.5);
+}
+
+.row {
+    position: fixed;
+    bottom: 80px;
+    width: 84%;
+}
+
+span.text-center {
+    text-shadow: 2px 2px #F5A9A9;
+    color: #3B0B0B;
 }
