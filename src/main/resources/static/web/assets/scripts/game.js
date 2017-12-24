@@ -2,6 +2,27 @@ $(function () {
     //Filling Grids
     $("#grid-ships").append(drawGrid());
     $("#grid-salvos").append(drawGrid());
+    $('table tr td:last-child').css('padding-left', '3px');
+    $('table tr td:last-child').css('padding-right', '3px');
+
+    $('td').on("mouseover", function() {
+        let tableName = $(this).parent().parent().parent().attr('id');
+        tableName = '#' + tableName + ' td';
+        let indCol = $(this).index();
+        let indRow = $(this).parent().index();
+        $(tableName).each(function(i, eachTd) {
+            if(($(eachTd).index() == indCol && $(eachTd).parent().index() <= indRow) ||
+            ($(eachTd).index() <= indCol && $(eachTd).parent().index() == indRow)) {
+                $(eachTd).addClass('hover');
+            } else {
+                $(eachTd).removeClass('hover');
+            }
+        });
+    });
+
+    $('table').on("mouseleave", function() {
+        $('td').removeClass('hover');
+    })
 
     //Getting GamePlayer parameter from URL
     let gpId = $.urlParam('gp');
