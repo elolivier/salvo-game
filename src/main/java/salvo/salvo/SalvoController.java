@@ -1,9 +1,13 @@
 package salvo.salvo;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -17,6 +21,49 @@ public class SalvoController {
     GameRepository repoGame;
 
     @RequestMapping("/games")
+    public Map<String, Object> getApiGames2() {
+        Map<String, Object> dto = new LinkedHashMap<>();
+        dto.put("player",getPlayerLoggedIn());
+        dto.put("games",getApiGames());
+        return dto;
+    }
+
+    private Map<String, Object> getPlayerLoggedIn() {
+        Map<String, Object> playerInfo = new LinkedHashMap<>();
+        String playerName = getLoggedUserName();
+        Player playerLogged;
+        try {
+            playerLogged = repoPlayer
+                    .findAll()
+                    .stream()
+                    .parallel()
+                    .filter(player -> player.getUserName() == playerName)
+                    .findAny()
+                    .get();
+        } catch (Exception NoSuchElementException) {
+            playerLogged = null;
+        }
+        Long idLogged;
+        if(playerLogged != null) {
+            idLogged = playerLogged.getPlayerId();
+            playerInfo.put("id", idLogged);
+            playerInfo.put("name", playerName);
+        } else {
+            playerInfo = null;
+        }
+
+        return playerInfo;
+    }
+
+    private String getLoggedUserName() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (!(authentication instanceof AnonymousAuthenticationToken)) {
+            String currentUserName = authentication.getName();
+            return currentUserName;
+        }
+        return null;
+    }
+
     public List<Object> getApiGames() {
         return repoGame
                 .findAll()
@@ -174,4 +221,27 @@ public class SalvoController {
                 (scores.stream().filter(filterTied).count())*0.5);
         return scoreMap;
     }
+
+    //-------------------CREATE NEW USER--------------------
+    @RequestMapping(path = "/players", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> createPlayer(@RequestParam String username, String password, String email) {
+        if (username.isEmpty() || password.isEmpty() || email.isEmpty()) {
+            return new ResponseEntity<>(makeMap("error", "Please, fill all fields"), HttpStatus.FORBIDDEN);
+        }
+        Player user = repoPlayer.findByUserNameOrEmail(username, email);
+        if (user != null) {
+            return new ResponseEntity<>(makeMap("error", "username or email already exist"), HttpStatus.CONFLICT);
+        }
+        user = repoPlayer.save(new Player(username, email, password));
+        return new ResponseEntity<>(makeMap("username", user.getUserName()), HttpStatus.CREATED);
+    }
+
+    private Map<String, Object> makeMap(String key, Object value) {
+        Map<String, Object> map = new HashMap<>();
+        map.put(key, value);
+        return map;
+    }
 }
+
+
+

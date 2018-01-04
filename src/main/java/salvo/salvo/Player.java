@@ -13,15 +13,15 @@ public class Player {
     @GeneratedValue(strategy=GenerationType.AUTO)
     private long player_id;
     private String userName;
-    private String firstName;
-    private String lastName;
+    private String email;
+    private String password;
 
     public Player() {}
 
-    public Player(String userName, String firstName, String lastName) {
+    public Player(String userName, String email, String password) {
         this.userName = userName;
-        this.firstName = firstName;
-        this.lastName = lastName;
+        this.email = email;
+        this.password = password;
     }
 
     public String getUserName() {
@@ -32,20 +32,21 @@ public class Player {
         this.userName = userName;
     }
 
-    public String getFirstName() {
-        return firstName;
+    public String getemail() {
+        return email;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
+    public void setemail(String email) {
+        this.email = email;
     }
 
-    public String getLastName() {
-        return lastName;
+    @JsonIgnore
+    public String getpassword() {
+        return password;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setpassword(String password) {
+        this.password = password;
     }
 
     public long getPlayerId() {

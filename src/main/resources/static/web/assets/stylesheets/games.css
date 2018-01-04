@@ -4,12 +4,16 @@ body {
     background-size: cover;
 }
 
+#log-features {
+    padding-top: 3%;
+}
+
 table,
 table.dataTable tbody tr{
     background:rgba(255,255,255,0.5);
 }
 
-.row {
+.games-info {
     position: fixed;
     bottom: 80px;
     width: 84%;
@@ -18,4 +22,38 @@ table.dataTable tbody tr{
 span.text-center {
     text-shadow: 2px 2px #F5A9A9;
     color: #3B0B0B;
+}
+
+#sign-in label, #login-form label {
+    min-width: 270px;
+    text-align: right;
+}
+
+#login-form label span {
+    miw-width: 77px;
+}
+
+#sign-in input, #login-form input:last-child {
+    background:rgba(255,255,255,0.5);
+}
+
+#myModal {
+    background-image: url('../images/ragnar.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+#popup-new-user {
+    background-image: url('../images/vikings3.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+#welcome-msg {
+    text-shadow: 2px 2px #F5A9A9;
+    color: #3B0B0B;
+}
+
+.hide {
+    display: none;
 }

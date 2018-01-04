@@ -5,6 +5,7 @@ $(function () {
     $('table tr td:last-child').css('padding-left', '3px');
     $('table tr td:last-child').css('padding-right', '3px');
 
+    //background column and row of cell hover
     $('td').on("mouseover", function() {
         let tableName = $(this).parent().parent().parent().attr('id');
         tableName = '#' + tableName + ' td';
@@ -19,10 +20,9 @@ $(function () {
             }
         });
     });
-
     $('table').on("mouseleave", function() {
         $('td').removeClass('hover');
-    })
+    });
 
     //Getting GamePlayer parameter from URL
     let gpId = $.urlParam('gp');
@@ -37,6 +37,7 @@ $(function () {
         paintSalvos(dataGame.salvos, gpId, dataShips);
 
     });
+    $('#logout-button').click(logout);
 });
 
 function paintInfoPlayers(dataGame, gpId) {
@@ -134,3 +135,11 @@ function hitShip(turn, locations, dataShips) {
         });
     });
 }
+
+function logout(evt) {
+   evt.preventDefault();
+   $.post("/api/logout")
+    .done(function() {
+     window.location.assign("http://localhost:8080/web/games.html");
+    });
+ }
