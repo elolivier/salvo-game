@@ -8,25 +8,32 @@
     <link rel="stylesheet" href="assets/stylesheets/game.css">
     <title>Game</title>
 </head>
-<body>
+<body class="authorized">
     <div class="container text-center">
         <div class="row"><h1>Let's go Vikings!</h1></div>
         <div id="info-game" class="row players"></div>
         <div class="row">
-            <form onsubmit="return false">
-                <button id="logout-button" class="btn btn-default btn-sm">Log out</button>
-            </form>
-        </div>
-        <div class="row">
-            <div class="col-sm-6"><h2>Your Ships</h2></div>
-            <div class="col-sm-6"><h2>Your Salvos</h2></div>
-        </div>
-        <div class="row">
-            <div class="col-sm-6">
-                <table id="grid-ships" class="table background-table"></table>
+            <div id="logout" class="col-sm-6">
+                <form onsubmit="return false">
+                    <button id="logout-button" class="btn btn-default btn-sm">Log out</button>
+                </form>
             </div>
-            <div class="col-sm-6">
-                <table id="grid-salvos" class="table  background-table"></table>
+            <div id="div-button" class="col-sm-6">
+                <button id="return-button" class="btn btn-default btn-sm">Back to All Games</button>
+            </div>
+        </div>
+        <div id="grids">
+            <div class="row">
+                <div class="col-sm-6"><h2>Your Ships</h2></div>
+                <div class="col-sm-6"><h2>Your Salvos</h2></div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <table id="grid-ships" class="table background-table"></table>
+                </div>
+                <div class="col-sm-6">
+                    <table id="grid-salvos" class="table  background-table"></table>
+                </div>
             </div>
         </div>
     </div>

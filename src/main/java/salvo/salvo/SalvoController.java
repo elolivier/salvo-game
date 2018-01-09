@@ -95,9 +95,20 @@ public class SalvoController {
     GamePlayerRepository repoGamePlayer;
 
     @RequestMapping("/game_view/{game_player_id}")
-    public Map<String, Object> getGameInfo(@PathVariable long game_player_id) {
-        GamePlayer gpOfId = getGpOfId(game_player_id);
+    public ResponseEntity<Map<String, Object>> secureGameInfo(@PathVariable long game_player_id) {
+        String loggedId = getLoggedUserName();
+        GamePlayer requestedGp = getGpOfId(game_player_id);
+        String requesterId = requestedGp.getPlayer().getUserName();
+        if (requesterId != loggedId) {
+            return new ResponseEntity<>(makeMap("error", "You're not authorized to see this information"), HttpStatus.UNAUTHORIZED);
+        }else {
+            return new ResponseEntity<>(getGameInfo(game_player_id), HttpStatus.OK);
+        }
+    }
+
+    private Map<String, Object> getGameInfo(long game_player_id) {
         Map<String, Object> dto = new LinkedHashMap<>();
+        GamePlayer gpOfId = getGpOfId(game_player_id);
         dto.put("game_id", gpOfId.getGame().getGameId());
         dto.put("created", gpOfId.getGame().getGameDate());
         dto.put("gamePlayers", gpOfId.getGame().getGames()
@@ -113,8 +124,7 @@ public class SalvoController {
     }
 
     private GamePlayer getGpOfId(long game_player_id) {
-        return repoGamePlayer
-                .findOne(game_player_id);
+        return repoGamePlayer.findOne(game_player_id);
     }
 
     private Map<String, Object> shipsDTO(Ship ship) {
@@ -234,6 +244,43 @@ public class SalvoController {
         }
         user = repoPlayer.save(new Player(username, email, password));
         return new ResponseEntity<>(makeMap("username", user.getUserName()), HttpStatus.CREATED);
+    }
+
+    //-------------------JOIN A GAME--------------------
+    @RequestMapping(path = "/join", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> addPlayerToGame(@RequestParam Long gid, Long pid) {
+        Game game = repoGame.findOne(gid);
+        Player player = repoPlayer.findOne(pid);
+        GamePlayer addingPlayer = repoGamePlayer.save(new GamePlayer(game, player));
+        return new ResponseEntity<>(makeMap("GamePlayerId", addingPlayer.getGamePlayerId()), HttpStatus.CREATED);
+    }
+
+    //-------------------PLAY ONE OF YOUR GAMES--------------------
+    @RequestMapping(path = "/play", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> backPlayerToGame(@RequestParam Long gid, Long pid) {
+        Game game = repoGame.findOne(gid);
+        Player player = repoPlayer.findOne(pid);
+        GamePlayer goToGamePlayer = repoGamePlayer.findByPlayerAndGame(player, game);
+        return new ResponseEntity<>(makeMap("GamePlayerId", goToGamePlayer.getGamePlayerId()), HttpStatus.CREATED);
+    }
+
+    //-------------------CREATE NEW GAME--------------------
+    @RequestMapping(path = "/new", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> newGame() {
+        Game game = new Game();
+        repoGame.save(game);
+        Player player = repoPlayer.findOne(getIdLogged());
+        GamePlayer newGamePlayer = new GamePlayer(game, player);
+        repoGamePlayer.save(newGamePlayer);
+        return new ResponseEntity<>(makeMap("GamePlayerId", newGamePlayer.getGamePlayerId()), HttpStatus.CREATED);
+    }
+
+    public Long getIdLogged(){
+        Map<String,Object> playerInfo = getPlayerLoggedIn();
+        Object loggedId = playerInfo.get("id");
+        String stringToConvert = String.valueOf(loggedId);
+        Long convertedLong = Long.parseLong(stringToConvert);
+        return convertedLong;
     }
 
     private Map<String, Object> makeMap(String key, Object value) {

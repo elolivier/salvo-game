@@ -27,17 +27,23 @@ $(function () {
     //Getting GamePlayer parameter from URL
     let gpId = $.urlParam('gp');
     let loader = "http://localhost:8080/api/game_view/" + gpId;
-
-    //Showing ships and info in HTML
-    $.getJSON(loader, function(data) {
-        let dataGame = data;
+    $.get(loader)
+    .done(function(xhr) {
+        let dataGame = xhr;
         let dataShips = dataGame.ships;
         $("#info-game").append(paintInfoPlayers(dataGame, gpId));
         paintShips(dataShips);
         paintSalvos(dataGame.salvos, gpId, dataShips);
-
+    })
+    .fail(function(xhr, status) {
+        $('body').addClass('unauthorized').removeClass('authorized');
+        $('#info-game, #grids').empty();
+        $('h1').html(status + ': ' + xhr.responseJSON.error);
+        //$('#div-button').removeClass('col-sm-6').addClass('col-sm-12');
     });
+
     $('#logout-button').click(logout);
+    $('#return-button').click(backHome);
 });
 
 function paintInfoPlayers(dataGame, gpId) {
@@ -140,6 +146,10 @@ function logout(evt) {
    evt.preventDefault();
    $.post("/api/logout")
     .done(function() {
-     window.location.assign("http://localhost:8080/web/games.html");
+     backHome();
     });
- }
+}
+
+function backHome() {
+    window.location.assign("http://localhost:8080/web/games.html");
+}

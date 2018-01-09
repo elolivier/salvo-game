@@ -47,12 +47,14 @@ public class SalvoApplication {
             Game game1 = new Game();
             Game game2 = new Game();
             Game game3 = new Game();
+            Game game4 = new Game();
             GamePlayer gamePlayer1 = new GamePlayer(game1, player1);
             GamePlayer gamePlayer2 = new GamePlayer(game1, player2);
             GamePlayer gamePlayer3 = new GamePlayer(game2, player3);
             GamePlayer gamePlayer4 = new GamePlayer(game2, player4);
             GamePlayer gamePlayer5 = new GamePlayer(game3, player2);
-            GamePlayer gamePlayer6 = new GamePlayer(game3, player3);
+//            GamePlayer gamePlayer6 = new GamePlayer(game3, player3);
+            GamePlayer gamePlayer7 = new GamePlayer(game4, player1);
             List<String> sh1_loc = new ArrayList<>(Arrays.asList("E1", "E2", "E3", "E4"));
             List<String> sh2_loc = new ArrayList<>(Arrays.asList("C2", "C3", "C4"));
             List<String> sh3_loc = new ArrayList<>(Arrays.asList("A1", "A2", "A3", "A4"));
@@ -82,13 +84,15 @@ public class SalvoApplication {
 			repGame.save(game1);
             repGame.save(game2);
             repGame.save(game3);
+            repGame.save(game4);
             repGamePlayer.save(gamePlayer1);
             repGamePlayer.save(gamePlayer2);
 			repGamePlayer.save(gamePlayer3);
 			repGamePlayer.save(gamePlayer4);
             repGamePlayer.save(gamePlayer5);
-            repGamePlayer.save(gamePlayer6);
-			repShip.save(ship1);
+//            repGamePlayer.save(gamePlayer6);
+            repGamePlayer.save(gamePlayer7);
+            repShip.save(ship1);
             repShip.save(ship2);
             repShip.save(ship3);
             repShip.save(ship4);
@@ -123,9 +127,8 @@ class WebSecurityConfiguration extends GlobalAuthenticationConfigurerAdapter {
 
             @Override
             public UserDetails loadUserByUsername(String name) throws UsernameNotFoundException {
-                List<Player> people = playerRepo.findByUserName(name);
-                if (!people.isEmpty()) {
-                        Player player = people.get(0);
+                Player player = playerRepo.findByUserName(name);
+                if (player != null) {
                         return new User(player.getUserName(), player.getpassword(),
                                 AuthorityUtils.createAuthorityList("USER"));
                 } else {
