@@ -184,7 +184,7 @@ function joinGame() {
 function playGame() {
     let gidFe = this.id.charAt(1);
     let pidFe = this.id.charAt(2);
-    $.post("/api/play",{ gid: gidFe, pid: pidFe })
+    $.get("/api/play",{ gid: gidFe, pid: pidFe })
     .done(function(xhr) {
         window.location.assign("http://localhost:8080/web/game.html?gp=" + xhr.GamePlayerId);
     })

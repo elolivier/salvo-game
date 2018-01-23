@@ -256,7 +256,7 @@ public class SalvoController {
     }
 
     //-------------------PLAY ONE OF YOUR GAMES--------------------
-    @RequestMapping(path = "/play", method = RequestMethod.POST)
+    @RequestMapping(path = "/play", method = RequestMethod.GET)
     public ResponseEntity<Map<String, Object>> backPlayerToGame(@RequestParam Long gid, Long pid) {
         Game game = repoGame.findOne(gid);
         Player player = repoPlayer.findOne(pid);
@@ -287,6 +287,20 @@ public class SalvoController {
         Map<String, Object> map = new HashMap<>();
         map.put(key, value);
         return map;
+    }
+
+    @Autowired
+    ShipRepository repoShip;
+
+    @RequestMapping(path= "/games/players/{gpId}/ships", method = RequestMethod.POST)
+    public ResponseEntity<String> addShips(@PathVariable long gpId, @RequestBody Set<Ship> ships) {
+        GamePlayer gpOfShips = repoGamePlayer.findOne(gpId);//salvar barco
+        ships.stream().forEach((ship)-> {
+
+            gpOfShips.addShip(ship);
+            repoShip.save(ship);
+        });
+        return new ResponseEntity<>("success" , HttpStatus.CREATED);
     }
 }
 

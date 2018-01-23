@@ -42,15 +42,70 @@ table {
     border: 2px solid black;
 }
 
-.big-boat {
-    background-image: url('../images/boat1.jpg');
-        background-attachment: fixed;
-        width: 10px;
-        height: 10px;
-        margin: 0 10px 10px 0;
-        display: inline-block;
-}
-
 .hide {
     display: none;
+}
+/********************************/
+#grid-global {
+	height: 440px;
+	width: 500px;
+	background:rgba(255,255,255,0.5);
+}
+
+#aircraft-carrier,
+#battleship,
+#submarine,
+#destroyer,
+#patrol-boat {
+	display: block;
+	position: absolute;
+}
+
+#aircraft-carrier {
+	width: 100px;
+	top: 0px;
+}
+
+#battleship {
+	width: 80px;
+	top: 42px;
+}
+
+#submarine {
+	width: 60px;
+	top: 84px;
+}
+
+#destroyer {
+	width: 60px;
+	top: 126px;
+}
+
+#patrol-boat {
+	width: 40px;
+	top: 168px;
+}
+
+#table-global {
+    position: relative;
+}
+
+.rTable {
+   	display: table;
+   	width: 100%;
+}
+
+.rTableCell {
+	width: 44px;
+	height: 40px;
+   	border: 1px solid #999999;
+   	background:rgba(255,255,255,0.5);
+}
+
+.fit {
+	border: 2px solid green;
+}
+
+.no-fit {
+	border: 2px solid red;
 }
