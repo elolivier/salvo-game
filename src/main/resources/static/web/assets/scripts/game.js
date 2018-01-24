@@ -7,6 +7,7 @@ $(function () {
     //Filling Grids
     $("#grid-ships").append(drawGrid());
     $("#grid-salvos").append(drawGrid());
+    $('#grid-salvos td').click(function () {setShoots(this)});
     $.get(loader)
     .done(function(xhr) {
         let dataGame = xhr;
@@ -57,7 +58,8 @@ $(function () {
         }else {
             $('#right-table-tittle').html('<h2>Opponent field</h2>');
             $('#left-table-tittle').html('<h2>Your Ships</h2>');
-            $('#right-table-button').html('<button id="fire-salvos type="button" class="btn btn-default btn-sm">Fire!</button>');
+            $('#right-table-button').html('<button id="fire-salvos" type="button" class="btn btn-default btn-sm" disabled>Fire!</button>');
+            $('#fire-salvos').click(function() {setSalvoData()});
         }
         $("#info-game").append(paintInfoPlayers(dataGame, gpId));
         paintShips(dataShips);
@@ -113,13 +115,7 @@ function paintInfoGame() {
     fillInfo += '<img src="assets/images/boat4.jpg" id="patrol-boat" draggable="true" ondragstart="dragstart(this, event)" ondrag="drag(this, event)"></div>'
     return fillInfo;
 }
-/*
-function paintGridOfShips() {
-    let fillGrid = '';
-    fillGrid += '<div id="table-global" class="rTable"></div>';
-    return fillGrid;
-}
-*/
+
 function paintInfoPlayers(dataGame, gpId) {
     let yourName;
     let opponentName;
@@ -149,10 +145,10 @@ function drawGrid() {
 
 function getRow(i, rowName) {
     let row = "";
-    row += "<td>" + rowName + "</td>";
+    row += '<td class="no-grid">' + rowName + "</td>";
     for(var j = 1; j < 11; j++) {
         if(i == 0) {
-            row += '<td>' + j + '</td>';
+            row += '<td class="no-grid">' + j + '</td>';
         } else {
             row += '<td class="' + rowName + j + '"></td>';
         }
@@ -266,7 +262,7 @@ function sendShips(shipsInfo) {
     });
 }
 
-//******************************************************************************
+//*********************************PLACE SHIPS*********************************************
 function drawDivsGrid() {
     let grid = "";
     let rows = ["","A","B","C","D","E","F","G","H","I","J"];
@@ -488,9 +484,7 @@ function collision(shipsPos) {
 }
 
 function placeShips(shipsPos) {
-	//console.log('resultado final',shipsPos);
 	sendShips(shipsPos);
-	//location.reload();
 }
 
 //*******************************************************************
@@ -527,4 +521,55 @@ function contains(a, obj) {
        }
     }
     return false;
+}
+
+//*******************************SALVOS********************************
+var shoots = 0;
+var shootsPos = [];
+function setShoots(shootCell) {
+    let arrayClasses = $(shootCell).prop('classList');
+    if (!$(shootCell).hasClass('no-grid')) {
+        if(shoots <= 5) {
+            if($(shootCell).hasClass('shoot')) {
+                console.log('before',shootsPos);
+                $(shootCell).removeClass('shoot');
+                shootsPos = shootsPos.filter(shoot => shoot !== arrayClasses[0]);
+                console.log(shootsPos);
+                shoots --;
+            }else {
+                $(shootCell).addClass('shoot');
+                shoots ++;
+                shootsPos.push(arrayClasses[0]);
+            }
+            if(shoots >= 5) {
+                $("#fire-salvos").removeAttr("disabled");
+            }
+        }
+    }
+}
+var turn = 0;
+function setSalvoData() {
+    turn ++;
+    let salvoData = {'turn':turn,'locations':shootsPos};
+    console.log(salvoData);
+    $("#fire-salvos").attr("disabled", true);
+    sendSalvo(salvoData);
+}
+
+function sendSalvo(salvoData) {
+    let gpId = $.urlParam('gp');
+    let poster = "/api/games/players/" + gpId + "/salvos";
+    $.post({
+      url: poster,
+      data: JSON.stringify(salvoData),
+      dataType: "text",
+      contentType: "application/json"
+    })
+    .done(function (response, status, jqXHR) {
+        let loader = "http://localhost:8080/api/game_view/" + gpId;
+        $.get(loader)
+        .done(function() {
+            location.reload();
+        });
+    });
 }

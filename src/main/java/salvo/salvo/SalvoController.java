@@ -289,6 +289,7 @@ public class SalvoController {
         return map;
     }
 
+    //-------------------SAVE SHIPS--------------------
     @Autowired
     ShipRepository repoShip;
 
@@ -302,7 +303,15 @@ public class SalvoController {
         });
         return new ResponseEntity<>("success" , HttpStatus.CREATED);
     }
+
+    //-------------------SAVE SALVOS--------------------
+    @Autowired
+    SalvoRepository repoSalvo;
+
+    @RequestMapping(path= "/games/players/{gpId}/salvos", method = RequestMethod.POST)
+    public ResponseEntity<String> addSalvo(@PathVariable long gpId, @RequestBody ShootDTO salvo) {
+        GamePlayer gpOfSalvo = repoGamePlayer.findOne(gpId);
+        repoSalvo.save(new Salvo(salvo.getTurn(), salvo.getLocations(), gpOfSalvo));
+        return new ResponseEntity<>("success" , HttpStatus.CREATED);
+    }
 }
-
-
-

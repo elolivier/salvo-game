@@ -109,3 +109,6 @@ table {
 .no-fit {
 	border: 2px solid red;
 }
+.shoot {
+    background-color: red;
+}
