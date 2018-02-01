@@ -12,6 +12,8 @@ $(function () {
     .done(function(xhr) {
         let dataGame = xhr;
         let dataShips = dataGame.ships;
+        let dataSalvos = dataGame.salvos;
+
         if(dataShips.length == 0){
             //**********************PLACE SHIPS*************************
             placeShipsPage();
@@ -191,46 +193,72 @@ function paintShips(dataShips) {
         let dataLocation = ship.locations;
         $(dataLocation).each(function(j, cell) {
             let selectTable = "#grid-ships " + "."+cell;
-            $(selectTable).css('background-color', 'blue');
+            $(selectTable).addClass('background-blue');
         });
     });
 }
 
 function paintSalvos(dataSalvos, ownerId, dataShips) {
+    var opponentShips;
     for (const [turn, val] of Object.entries(dataSalvos)) {
         let owner = false;
         for (const [playerId, locations] of Object.entries(val)) {
+            if (playerId != ownerId) {
+                opponentShips = locations.shipsStatus;
+            }
             if (playerId == ownerId) {
-                $(locations).each(function(i, cell) {
+                var myShips = locations.shipsStatus;
+                for (const [playerId, locations] of Object.entries(val)) {
+                    if (playerId != ownerId) {
+                        opponentShips = locations.shipsStatus;
+                    }
+                }
+                $(locations.salvo).each(function(i, cell) {
                     let selectTable = "#grid-salvos " + "."+cell;
-                    $(selectTable).css('background-color', 'green');
+                    $(opponentShips).each(function(j, shipInfo) {
+                        if (shipInfo.shipSink) {
+                            $(shipInfo.cellsHitted).each(function(k, cellHitted) {
+                                $('#grid-salvos .'+cellHitted).addClass('sunk');
+                            });
+                        }
+                        $(shipInfo.cellsHitted).each(function(l, cellHitted) {
+                            if (cell == cellHitted) {
+                                if ($(selectTable).hasClass("no-hit")) {
+                                    $(selectTable).removeClass('no-hit');
+                                    $(selectTable).addClass('hit');
+                                }else {
+                                    $(selectTable).addClass('hit');
+                                }
+                            }else {
+                                if (!$(selectTable).hasClass("hit")) {
+                                    $(selectTable).addClass('no-hit');
+                                }
+                            }
+                        });
+                    });
                     $(selectTable).append(turn);
                 });
             } else {
-//                $(locations).each(function(i, cell) {
-//                    let selectTable = "#grid-ships " + "."+cell;
-//                    $(selectTable).css('background-color', 'green');
-//                    $(selectTable).append(turn);
-//                });
-                hitShip(turn, locations, dataShips);
+                hitShip(turn, locations.salvo, dataShips);
             }
         }
     }
 }
 
-function hitShip(turn, locations, dataShips) {
+function hitShip(turn, salvo, dataShips) {
     $(dataShips).each(function(i, ship) {
         $(ship.locations).each(function(j, cellShip) {
-            $(locations).each(function(k, cellSalvo) {
-                if (cellShip == cellSalvo) {
+            $(salvo).each(function(k, shoot) {
+                if (cellShip == shoot) {
                     let selectTable = "#grid-ships " + "."+cellShip;
-                    $(selectTable).css('background-color', 'red');
+                    $(selectTable).addClass('hit-on-me');
+                    $(selectTable).removeClass('background-blue');
                     $(selectTable).html(turn);
                 }
             });
         });
     });
-}7
+}
 
 function logout(evt) {
    evt.preventDefault();
@@ -293,7 +321,6 @@ function setWidthShip(widthCell) {
 }
 
 function changeWidthShip(widthCell, shipId) {
-	//console.log(shipId,widthCell);
 	if (shipId == 'aircraft-carrier') {
 		$('#aircraft-carrier').css('width', (widthCell-1)*5);
 	} else if (shipId == 'battleship') {
@@ -559,6 +586,7 @@ function setSalvoData() {
 function sendSalvo(salvoData) {
     let gpId = $.urlParam('gp');
     let poster = "/api/games/players/" + gpId + "/salvos";
+    console.log(poster);
     $.post({
       url: poster,
       data: JSON.stringify(salvoData),

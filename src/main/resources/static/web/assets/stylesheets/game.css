@@ -112,3 +112,53 @@ table {
 .shoot {
     background-color: red;
 }
+
+.transparent-background {
+    background:rgba(255,255,255,0.5);
+}
+
+.table-hits {
+    margin: 0 auto;
+    width: 100%;
+}
+
+.table-hits thead th {
+    text-align: center;
+}
+
+.hit {
+    background-image: url('../images/hit.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    text-shadow: -1px 0 greenyellow, 0 1px greenyellow, 1px 0 greenyellow, 0 -1px greenyellow;
+}
+
+.no-hit {
+    background-image: url('../images/no-hit.svg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    text-shadow: -1px 0 greenyellow, 0 1px greenyellow, 1px 0 greenyellow, 0 -1px greenyellow;
+}
+
+.hit-on-me {
+    background-image: url('../images/hit.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    background-color: red;
+    text-shadow: -1px 0 greenyellow, 0 1px greenyellow, 1px 0 greenyellow, 0 -1px greenyellow;
+}
+
+.sunk {
+    background-image: url('../images/Red-X.svg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    text-shadow: -1px 0 greenyellow, 0 1px greenyellow, 1px 0 greenyellow, 0 -1px greenyellow;
+}
+
+.background-blue {
+    background-color: blue;
+}
