@@ -28,6 +28,7 @@ public class SalvoController {
         return dto;
     }
 
+    //Return a map with ID and Username of player logged
     private Map<String, Object> getPlayerLoggedIn() {
         Map<String, Object> playerInfo = new LinkedHashMap<>();
         String playerName = getLoggedUserName();
@@ -55,6 +56,7 @@ public class SalvoController {
         return playerInfo;
     }
 
+    //return the username of player logged
     private String getLoggedUserName() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (!(authentication instanceof AnonymousAuthenticationToken)) {
@@ -64,6 +66,7 @@ public class SalvoController {
         return null;
     }
 
+    //return all games saved in DB
     public List<Object> getApiGames() {
         return repoGame
                 .findAll()
@@ -96,35 +99,117 @@ public class SalvoController {
 
     @RequestMapping("/game_view/{game_player_id}")
     public ResponseEntity<Map<String, Object>> secureGameInfo(@PathVariable long game_player_id) {
-        String loggedId = getLoggedUserName();
-        GamePlayer requestedGp = getGpOfId(game_player_id);
-        String requesterId = requestedGp.getPlayer().getUserName();
-        if (requesterId != loggedId) {
+        String loggedUserName = getLoggedUserName();
+        GamePlayer requesterGp = getRequesterGp(game_player_id);
+        String requesterUserName = requesterGp.getPlayer().getUserName();
+        if (requesterUserName != loggedUserName) {
             return new ResponseEntity<>(makeMap("error", "You're not authorized to see this information"), HttpStatus.UNAUTHORIZED);
         }else {
-            return new ResponseEntity<>(getGameInfo(game_player_id), HttpStatus.OK);
+            Game thisGame = requesterGp.getGame();
+            GamePlayer opponent1 = getOpponent(thisGame.getGames(), game_player_id);
+            return new ResponseEntity<>(getGameInfo(thisGame, requesterGp, opponent1), HttpStatus.OK);
         }
     }
 
-    private Map<String, Object> getGameInfo(long game_player_id) {
+    private Map<String, Object> getGameInfo(Game thisGame, GamePlayer requesterGp, GamePlayer opponent) {
         Map<String, Object> dto = new LinkedHashMap<>();
-        GamePlayer gpOfId = getGpOfId(game_player_id);
-        dto.put("game_id", gpOfId.getGame().getGameId());
-        dto.put("created", gpOfId.getGame().getGameDate());
-        dto.put("gamePlayers", gpOfId.getGame().getGames()
+        dto.put("game_id", thisGame.getGameId());
+        dto.put("stateOfGame", getStateOfGame(requesterGp, opponent));
+        dto.put("created", thisGame.getGameDate());
+        dto.put("gamePlayers", thisGame.getGames()
                 .stream()
                 .map(game_player -> gamePlayerDTO(game_player))
                 .collect(Collectors.toList()));
-        dto.put("ships", gpOfId.getShips()
+        dto.put("ships", requesterGp.getShips()
                 .stream()
                 .map(ship -> shipsDTO(ship))
                 .collect(Collectors.toList()));
-        dto.put("salvos", getTurnsMap(gpOfId, gpOfId.getGame().getGames())); //MAP OF TURN:OBJECT
+        dto.put("salvos", getTurnsMap(requesterGp, thisGame.getGames(), opponent)); //MAP OF TURN:OBJECT
         return dto;
     }
 
-    private GamePlayer getGpOfId(long game_player_id) {
-        return repoGamePlayer.findOne(game_player_id);
+    private GamePlayer getRequesterGp(long requesterGpId) {
+        return repoGamePlayer.findOne(requesterGpId);
+    }
+
+    @Autowired
+    ScoreRepository repoScore;
+
+    private int getStateOfGame(GamePlayer gpRequester, GamePlayer opponent) {
+        int stateOfGame;
+        //State 1: Place your ships
+        if(gpRequester.getShips().size() == 0) {
+            stateOfGame = 1;
+        }
+        //State 2: Waiting for opponent
+        else if(opponent == null) {
+            stateOfGame = 2;
+        }
+        //State 3: Waiting for opponent place ships
+        else if(opponent.getShips().size() == 0) {
+            stateOfGame = 3;
+        }
+        //State 6: All your ships sunk (you lose)
+        else if(allSunk(gpRequester)) {
+            stateOfGame = 6;
+            Score testLoser = repoScore.findByGameAndPlayer(gpRequester.getGame(), gpRequester.getPlayer());
+            Score loser = new Score(gpRequester.getGame(), gpRequester.getPlayer(), 0.0);
+            if(testLoser == null) {
+                repoScore.save(loser);
+            }
+        }
+        //State 7: All your enemy ships sunk (you win)
+        else if(allSunk(opponent)) {
+            stateOfGame = 7;
+            Score test = repoScore.findByGameAndPlayer(gpRequester.getGame(), gpRequester.getPlayer());
+            Score winner = new Score(gpRequester.getGame(), gpRequester.getPlayer(), 1.0);
+            if(test == null) {
+                repoScore.save(winner);
+            }
+        }
+
+        //State 4-5: Waiting for opponent to shoot or shoot
+        else if(gpRequester.getGamePlayerId() < opponent.getGamePlayerId()) {
+            if(gpRequester.salvos.size() > opponent.salvos.size()) {
+                //State 4: Waiting for opponent to shoot
+                stateOfGame = 4;
+            }else {
+                //State 5: Shoot your salvo
+                stateOfGame = 5;
+            }
+        }
+        //State 4-5: Waiting for opponent to shoot or shoot
+        else if(gpRequester.getGamePlayerId() > opponent.getGamePlayerId()) {
+            if(gpRequester.salvos.size() == opponent.salvos.size()) {
+                //State 4: Waiting for opponent to shoot
+                stateOfGame = 4;
+            }else {
+                //State 5: Shoot your salvo
+                stateOfGame = 5;
+            }
+        }
+
+        else {
+            stateOfGame = 9;
+        }
+        return stateOfGame;
+    }
+
+    private boolean allSunk(GamePlayer gp) {
+        boolean gameOver;
+        int ships=0;
+        for (Ship ship : gp.getShips()) {
+            boolean sunk = isSink(gp, ship);
+            if (sunk) {
+                ships++;
+            }
+        }
+        if(ships == gp.getShips().size()) {
+            gameOver = true;
+        }else {
+            gameOver = false;
+        }
+        return gameOver;
     }
 
     private Map<String, Object> shipsDTO(Ship ship) {
@@ -136,21 +221,22 @@ public class SalvoController {
 
     //-------------------TASK 4--------------------
     //This function should return an object Turn:Object
-    private Map<Long, Object> getTurnsMap(GamePlayer gpOfId, Set<GamePlayer> bothGps) {
+    private Map<Long, Object> getTurnsMap(GamePlayer requesterGp, Set<GamePlayer> bothGps, GamePlayer opponent) {
         Map<Long, Object> turnObject = new LinkedHashMap<>();
         Long turns = (long) getTurnsQuantity(bothGps);
+        //System.out.println("quantity of turns " + turns);
         for (Long i = 1L; i <= turns; i++) {
-            turnObject.put(i, getMapPlayers(i,bothGps,gpOfId));
+            turnObject.put(i, getMapPlayers(i,opponent,requesterGp));
         }
         return turnObject;
     }
 
     //This function should return an object {PlayerId1:Locations1, PlayerId2:Locations2}
-    private Map<Long, Object> getMapPlayers(Long turn, Set<GamePlayer> bothGps, GamePlayer gpOfId) {
+    private Map<Long, Object> getMapPlayers(Long turn, GamePlayer opponent, GamePlayer requesterGp) {
         Map<Long, Object> eachPlayerPerTurn = new LinkedHashMap<>();
-        eachPlayerPerTurn.put(gpOfId.getPlayer().getPlayerId(),getSalvoInfo(turn, gpOfId));
-        GamePlayer opponent = getOpponent(bothGps, gpOfId.getGamePlayerId());
+
         if (opponent != null){
+            eachPlayerPerTurn.put(requesterGp.getPlayer().getPlayerId(),getSalvoInfo(turn, requesterGp));
             eachPlayerPerTurn.put(opponent.getPlayer().getPlayerId(),getSalvoInfo(turn, opponent));
         }
         return eachPlayerPerTurn;
@@ -158,16 +244,28 @@ public class SalvoController {
 
     private Map<String, Object> getSalvoInfo(Long turn, GamePlayer gamePlayer) {
         Map<String, Object> eachPlayerSalvoPerTurn = new LinkedHashMap<>();
-        eachPlayerSalvoPerTurn.put("salvo", getSalvoLocations(turn, gamePlayer));
+        eachPlayerSalvoPerTurn.put("salvo", getSalvoInformation(turn, gamePlayer));
         eachPlayerSalvoPerTurn.put("shipsStatus", getShipsStatus(turn, gamePlayer));
         return eachPlayerSalvoPerTurn;
     }
 
+    private List<Map<String, Object>> getShipsStatus(Long turn, GamePlayer gamePlayer) {
+        List<Map<String, Object>> allShips = new ArrayList<>();
+        gamePlayer.getShips().forEach((ship) -> {
+            Map<String, Object> eachShip = new LinkedHashMap<>();
+            eachShip.put("ship", ship.getShipType());
+            eachShip.put("cellsHitted", getHitStatus(turn, gamePlayer, ship));
+            eachShip.put("shipSink", isSink(gamePlayer, ship));
+            allShips.add(eachShip);
+        });
+        return allShips;
+    }
+
     private List<String> getHitStatus(Long turn, GamePlayer gamePlayer, Ship ship) {
         List<String> hits = new ArrayList<>();
-        GamePlayer opponent = getOpponent(gamePlayer.getGame().getGames(),gamePlayer.getPlayer().getPlayerId());
+        GamePlayer opponent = getOpponent(gamePlayer.getGame().getGames(),gamePlayer.getGamePlayerId());
         List<String> opponentSalvo = getSalvoLocations(turn, opponent);
-        if (opponentSalvo != null) {
+        if (opponentSalvo != null && opponent != gamePlayer) {
             opponentSalvo.forEach((shoot)-> {
                 ship.getLocations().forEach((position)-> {
                     if (position == shoot) {
@@ -179,21 +277,9 @@ public class SalvoController {
         return hits;
     }
 
-    private List<Map<String, Object>> getShipsStatus(Long turn, GamePlayer gamePlayer) {
-        List<Map<String, Object>> allShips = new ArrayList<>();
-        gamePlayer.getShips().forEach((ship) -> {
-            Map<String, Object> eachShip = new LinkedHashMap<>();
-            eachShip.put("ship",ship.getShipType());
-            eachShip.put("cellsHitted",getHitStatus(turn, gamePlayer, ship));
-            eachShip.put("shipSink",isSink(gamePlayer, ship));
-            allShips.add(eachShip);
-        });
-        return allShips;
-    }
-
     private boolean isSink(GamePlayer gamePlayer, Ship ship) {
         boolean sunk;
-        GamePlayer opponent = getOpponent(gamePlayer.getGame().getGames(),gamePlayer.getPlayer().getPlayerId());
+        GamePlayer opponent = getOpponent(gamePlayer.getGame().getGames(), gamePlayer.getGamePlayerId());
         Set<Salvo> opponentSalvo = opponent.getSalvos();
         List<String> shipPositions = ship.getLocations();
         List<String> allShoots = opponentSalvo.stream().map(salvo -> salvo.getSalvo_locations()).flatMap(shoot -> shoot.stream()).collect(Collectors.toList());
@@ -202,19 +288,14 @@ public class SalvoController {
     }
 
     //This function return the GamePlayer of the opponent or null
-    private GamePlayer getOpponent(Set<GamePlayer> bothGps, Long ownerId) {
-        Predicate<GamePlayer> isOpponent = gamePlayer -> gamePlayer.getGamePlayerId() != ownerId;
+    private GamePlayer getOpponent(Set<GamePlayer> bothGps, Long ownerGpId) {
+        Predicate<GamePlayer> isOpponent = gamePlayer -> gamePlayer.getGamePlayerId() != ownerGpId;
         Optional<GamePlayer> returnGp = bothGps
                 .stream()
                 .filter(isOpponent)
                 .findAny();
-        GamePlayer opponent;
-        try {
-            opponent = returnGp.get();
-        } catch (Exception e) {
-            opponent = null;
-        }
-        return opponent;
+        GamePlayer opponent2 = returnGp.orElse(null);
+        return opponent2;
     }
 
     //This function return Salvo Locations for a turn and GamePlayer give it
@@ -231,6 +312,32 @@ public class SalvoController {
             locations = null;
         }
         return locations;
+    }
+
+    private List<Map<String, Object>> getSalvoInformation(Long turn, GamePlayer gp) {
+        List<Map<String, Object>> salvoInfo = new ArrayList<>();
+        List<String> locations = getSalvoLocations(turn, gp);
+        if(locations != null) {
+            for (String shoot : locations) {
+                Map<String, Object> eachSalvoPerTurn = new LinkedHashMap<>();
+                eachSalvoPerTurn.put("cell", shoot);
+                eachSalvoPerTurn.put("hit", shootHit(shoot, gp));
+                salvoInfo.add(eachSalvoPerTurn);
+            }
+        }
+        return salvoInfo;
+    }
+
+    private boolean shootHit(String shoot, GamePlayer gp) {
+        boolean hit = false;
+        GamePlayer opponent2 = getOpponent(gp.getGame().getGames(),gp.getGamePlayerId());
+        List<String> allShipsLocations = opponent2.getShips().stream().map(ship -> ship.getLocations()).flatMap(cell->cell.stream()).collect(Collectors.toList());
+        for (String cell : allShipsLocations) {
+            if(shoot == cell) {
+                hit = true;
+            }
+        }
+        return hit;
     }
 
     //This function returns the quantity of turns played in a game
@@ -319,7 +426,7 @@ public class SalvoController {
         repoGamePlayer.save(newGamePlayer);
         return new ResponseEntity<>(makeMap("GamePlayerId", newGamePlayer.getGamePlayerId()), HttpStatus.CREATED);
     }
-
+    //Return Long number of ID user logged
     public Long getIdLogged(){
         Map<String,Object> playerInfo = getPlayerLoggedIn();
         Object loggedId = playerInfo.get("id");
@@ -353,9 +460,24 @@ public class SalvoController {
     SalvoRepository repoSalvo;
 
     @RequestMapping(path= "/games/players/{gpId}/salvos", method = RequestMethod.POST)
-    public ResponseEntity<String> addSalvo(@PathVariable long gpId, @RequestBody ShootDTO salvo) {
+    public ResponseEntity<String> addSalvo(@PathVariable long gpId, @RequestBody List<String> salvo) {
         GamePlayer gpOfSalvo = repoGamePlayer.findOne(gpId);
-        repoSalvo.save(new Salvo(salvo.getTurn(), salvo.getLocations(), gpOfSalvo));
+        Set<GamePlayer> bothGp = gpOfSalvo.getGame().getGames();
+        GamePlayer playerMostPlay = bothGp.stream()
+                .max(Comparator.comparingInt(gp -> gp.getSalvos().size()))
+                .get();
+        int turns = getTurnsQuantity(bothGp);
+        long thisTurn;
+        if(gpOfSalvo.getGamePlayerId() == playerMostPlay.getGamePlayerId()) {
+            thisTurn = turns + 1;
+        }else {
+            if(turns == 0) {
+                thisTurn = turns + 1;
+            }else {
+                thisTurn = turns;
+            }
+        }
+        repoSalvo.save(new Salvo(thisTurn, salvo, gpOfSalvo));
         return new ResponseEntity<>("success" , HttpStatus.CREATED);
     }
 }

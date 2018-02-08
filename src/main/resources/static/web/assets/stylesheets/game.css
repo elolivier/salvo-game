@@ -156,9 +156,35 @@ table {
     background-repeat: no-repeat;
     background-position: center;
     background-size: cover;
+    background-color: transparent;
     text-shadow: -1px 0 greenyellow, 0 1px greenyellow, 1px 0 greenyellow, 0 -1px greenyellow;
 }
 
 .background-blue {
     background-color: blue;
 }
+
+.not-your-turn {
+    background-image: url('../images/opponent-shooting.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 90%;
+}
+
+.no-opponent {
+    background-image: url('../images/waiting-opo.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 90%;
+}
+
+.no-opponent-ships {
+    background-image: url('../images/placing-ships.jpg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 90%;
+}
+
+.onClickable { pointer-events: auto; }
+
+.offClickable { pointer-events: none; }

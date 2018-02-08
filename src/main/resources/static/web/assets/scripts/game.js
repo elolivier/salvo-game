@@ -1,20 +1,45 @@
 var shipsPos = [];
 $(function () {
+
     //Getting GamePlayer parameter from URL
     let gpId = $.urlParam('gp');
     let loader = "http://localhost:8080/api/game_view/" + gpId;
 
-    //Filling Grids
-    $("#grid-ships").append(drawGrid());
-    $("#grid-salvos").append(drawGrid());
-    $('#grid-salvos td').click(function () {setShoots(this)});
     $.get(loader)
     .done(function(xhr) {
         let dataGame = xhr;
         let dataShips = dataGame.ships;
         let dataSalvos = dataGame.salvos;
+        let dataGamePlayers = dataGame.gamePlayers;
+        let gameStatus = dataGame.stateOfGame;
 
-        if(dataShips.length == 0){
+        //Filling Grids
+        $("#grid-ships").html(drawGrid());
+        $("#grid-salvos").html(drawGrid());
+        $('#grid-salvos td').click(function () {
+            setShoots(this);
+        });
+
+        //feature row/column red
+        $('td').on("mouseover", function() {
+            let tableName = $(this).parent().parent().parent().attr('id');
+            tableName = '#' + tableName + ' td';
+            let indCol = $(this).index();
+            let indRow = $(this).parent().index();
+            $(tableName).each(function(i, eachTd) {
+                if(($(eachTd).index() == indCol && $(eachTd).parent().index() <= indRow) ||
+                ($(eachTd).index() <= indCol && $(eachTd).parent().index() == indRow)) {
+                    $(eachTd).addClass('hover');
+                } else {
+                    $(eachTd).removeClass('hover');
+                }
+            });
+        });
+        $('table').on("mouseleave", function() {
+            $('td').removeClass('hover');
+        });
+
+        if(gameStatus == 1){
             //**********************PLACE SHIPS*************************
             placeShipsPage();
             var widthCell = $('.A5').outerWidth();
@@ -51,21 +76,18 @@ $(function () {
                 this.style.transform = 'rotate('+deg+'deg)';
                 rotated = !rotated;
             });
-
             //*********************************************************************
             $('#right-table-tittle').html('<h2>Drag your ships to the grid</h2>');
             $('#left-table-tittle').html('<h2>Drop your Ships here</h2>');
             $('#right-table-button').html('<button id="place-ships" type="button" class="btn btn-default btn-sm" disabled>Place Ships</button>');
             $('#place-ships').click(function() {placeShips(shipsPos)});
-        }else {
-            $('#right-table-tittle').html('<h2>Opponent field</h2>');
-            $('#left-table-tittle').html('<h2>Your Ships</h2>');
-            $('#right-table-button').html('<button id="fire-salvos" type="button" class="btn btn-default btn-sm" disabled>Fire!</button>');
-            $('#fire-salvos').click(function() {setSalvoData()});
         }
-        $("#info-game").append(paintInfoPlayers(dataGame, gpId));
+        else {
+            testStatus(dataSalvos, gpId, dataGamePlayers, gameStatus);
+        }
+        $("#info-game").html(paintInfoPlayers(dataGame, gpId));
         paintShips(dataShips);
-        paintSalvos(dataGame.salvos, gpId, dataShips);
+
     })
     .fail(function(xhr, status) {
         $('body').addClass('unauthorized').removeClass('authorized');
@@ -73,32 +95,71 @@ $(function () {
         $('h1').html(status + ': ' + xhr.responseJSON.error);
         //$('#div-button').removeClass('col-sm-6').addClass('col-sm-12');
     });
-    $('table tr td:last-child').css('padding-left', '3px');
-    $('table tr td:last-child').css('padding-right', '3px');
 
-    //background column and row of cell hover
-    $('td').on("mouseover", function() {
-        let tableName = $(this).parent().parent().parent().attr('id');
-        tableName = '#' + tableName + ' td';
-        let indCol = $(this).index();
-        let indRow = $(this).parent().index();
-        $(tableName).each(function(i, eachTd) {
-            if(($(eachTd).index() == indCol && $(eachTd).parent().index() <= indRow) ||
-            ($(eachTd).index() <= indCol && $(eachTd).parent().index() == indRow)) {
-                $(eachTd).addClass('hover');
-            } else {
-                $(eachTd).removeClass('hover');
-            }
-        });
-    });
-    $('table').on("mouseleave", function() {
-        $('td').removeClass('hover');
-    });
+    //$('table tr td:last-child').css('padding-left', '3px');
+    //$('table tr td:last-child').css('padding-right', '3px');
 
+    //buttons listener
     $('#logout-button').click(logout);
     $('#return-button').click(backHome);
+//    $('#grid-salvos td').click(function () {
+//        setShoots(this);
+//    });
+    setInterval(function(){
+        $.get(loader)
+        .done(function(xhr) {
+            let dataGame = xhr;
+            let dataShips = dataGame.ships;
+            let dataSalvos = dataGame.salvos;
+            let dataGamePlayers = dataGame.gamePlayers;
+            let gameStatus = dataGame.stateOfGame;
 
+//            if(gameStatus != 5) {
+//                $('table tr td').removeClass('onClickable');
+//                $('table tr td').addClass('offClickable');
+//            }
+
+            testStatus(dataSalvos, gpId, dataGamePlayers, gameStatus);
+
+        })
+        .fail(function(xhr, status) {
+            $('body').addClass('unauthorized').removeClass('authorized');
+            $('#info-game, #grids').empty();
+            $('h1').html(status + ': ' + xhr.responseJSON.error);
+        });
+    }, 5000);
 });
+
+function testStatus(dataSalvos, gpId, dataGamePlayers, gameStatus) {
+    if(gameStatus == 2) {
+        $('#grid-salvos').addClass('no-opponent');
+    }else if(gameStatus == 3) {
+        $('#grid-salvos').addClass('no-opponent-ships');
+    }else if(gameStatus == 4) {
+        $('#grid-salvos').addClass('not-your-turn');
+        $('#left-table-tittle').html('<h2>Your field</h2>');
+        $('#right-table-tittle').html('<h2>Opponent field</h2>');
+        paintSalvos(dataSalvos, gpId, dataGamePlayers);
+    }else if(gameStatus == 5) {
+        $('#grid-salvos').removeClass('no-opponent');
+        $('#grid-salvos').removeClass('no-opponent-ships');
+        $('#grid-salvos').removeClass('not-your-turn');
+//        $('table tr td').addClass('onClickable');
+//        $('table tr td').removeClass('offClickable');
+
+        $('#right-table-tittle').html('<h2>Shoot your Salvo</h2>');
+        $('#left-table-tittle').html('<h2>Your field</h2>');
+        $('#right-table-button').html('<button id="fire-salvos" type="button" class="btn btn-default btn-sm" disabled>Fire!</button>');
+        $('#fire-salvos').click(function() {sendSalvo(gpId)});
+        paintSalvos(dataSalvos, gpId, dataGamePlayers);
+    }
+    else if(gameStatus == 6) {
+        window.location.assign("http://localhost:8080/web/lose.html");
+    }
+    else if(gameStatus == 7) {
+        window.location.assign("http://localhost:8080/web/win.html");
+    }
+}
 
 function placeShipsPage() {
     $("#right-table").empty();
@@ -193,70 +254,66 @@ function paintShips(dataShips) {
         let dataLocation = ship.locations;
         $(dataLocation).each(function(j, cell) {
             let selectTable = "#grid-ships " + "."+cell;
-            $(selectTable).addClass('background-blue');
+            if(!$(selectTable).hasClass("hit-on-me")) {
+                $(selectTable).addClass('background-blue');
+            }
         });
     });
 }
 
-function paintSalvos(dataSalvos, ownerId, dataShips) {
-    var opponentShips;
-    for (const [turn, val] of Object.entries(dataSalvos)) {
-        let owner = false;
-        for (const [playerId, locations] of Object.entries(val)) {
-            if (playerId != ownerId) {
-                opponentShips = locations.shipsStatus;
-            }
-            if (playerId == ownerId) {
-                var myShips = locations.shipsStatus;
+function paintSalvos(dataSalvos, ownerId, dataGamePlayers) {
+    //console.log(dataGamePlayers);
+    $(dataGamePlayers).each(function(i, eachGp) {
+        if(eachGp.game_player_id == ownerId) {
+            let requesterId = eachGp.player.playerId;
+            for (const [turn, val] of Object.entries(dataSalvos)) {
                 for (const [playerId, locations] of Object.entries(val)) {
-                    if (playerId != ownerId) {
-                        opponentShips = locations.shipsStatus;
-                    }
-                }
-                $(locations.salvo).each(function(i, cell) {
-                    let selectTable = "#grid-salvos " + "."+cell;
-                    $(opponentShips).each(function(j, shipInfo) {
-                        if (shipInfo.shipSink) {
-                            $(shipInfo.cellsHitted).each(function(k, cellHitted) {
-                                $('#grid-salvos .'+cellHitted).addClass('sunk');
-                            });
-                        }
-                        $(shipInfo.cellsHitted).each(function(l, cellHitted) {
-                            if (cell == cellHitted) {
-                                if ($(selectTable).hasClass("no-hit")) {
-                                    $(selectTable).removeClass('no-hit');
-                                    $(selectTable).addClass('hit');
-                                }else {
-                                    $(selectTable).addClass('hit');
-                                }
+                    if(requesterId == playerId) {
+                        //console.log(turn, locations.shipsStatus);
+                        hitShip(turn, locations.shipsStatus);
+                        //console.log('own ships',locations.shipsStatus);
+                        $(locations.salvo).each(function(i, shoot) {
+                            //console.log(shoot.cell, shoot.hit);
+                            let selectTable = "#grid-salvos " + "."+shoot.cell;
+                            $(selectTable).html(turn);
+                            if(shoot.hit) {
+                                $(selectTable).addClass('hit');
                             }else {
-                                if (!$(selectTable).hasClass("hit")) {
-                                    $(selectTable).addClass('no-hit');
-                                }
+                                $(selectTable).addClass('no-hit');
                             }
                         });
-                    });
-                    $(selectTable).append(turn);
-                });
-            } else {
-                hitShip(turn, locations.salvo, dataShips);
+                        checkSunk(locations.shipsStatus, 'ships');
+                    }
+                    if(requesterId != playerId) {
+                        //console.log(turn, locations.salvo);
+                        //console.log('enemy ships',locations.shipsStatus);
+                        checkSunk(locations.shipsStatus, 'salvos');
+                    }
+                }
             }
         }
-    }
+    });
 }
 
-function hitShip(turn, salvo, dataShips) {
-    $(dataShips).each(function(i, ship) {
-        $(ship.locations).each(function(j, cellShip) {
-            $(salvo).each(function(k, shoot) {
-                if (cellShip == shoot) {
-                    let selectTable = "#grid-ships " + "."+cellShip;
-                    $(selectTable).addClass('hit-on-me');
-                    $(selectTable).removeClass('background-blue');
-                    $(selectTable).html(turn);
-                }
-            });
+function hitShip(turn, ships) {
+    //console.log(ships);
+    $(ships).each(function(i, ship) {
+        $(ship.cellsHitted).each(function(j, cell) {
+            let selectTable2 = "#grid-ships " + "."+cell;
+            $(selectTable2).addClass('hit-on-me');
+            $(selectTable2).removeClass('background-blue');
+            $(selectTable2).html(turn);
         });
+    });
+}
+
+function checkSunk(ShipsStatus, grid) {
+    $(ShipsStatus).each(function(i, ship) {
+        if(ship.shipSink){
+            $(ship.cellsHitted).each(function(j, cell) {
+                $('#grid-' + grid + ' .'+cell).addClass('sunk');
+            });
+        }
     });
 }
 
@@ -370,7 +427,7 @@ function setFitBehaviour(shipId, targetId) {
 	}
 
 	if (shipsPos.length==5 && !$('img').hasClass('no-fit')) {
-	    console.log('resultado final 1',shipsPos);
+	    //console.log('resultado final 1',shipsPos);
 		$('#place-ships').removeAttr("disabled");
 	}else {
 	    $("#place-ships").attr("disabled", true);
@@ -558,45 +615,36 @@ function setShoots(shootCell) {
     if (!$(shootCell).hasClass('no-grid')) {
         if(shoots <= 5) {
             if($(shootCell).hasClass('shoot')) {
-                console.log('before',shootsPos);
                 $(shootCell).removeClass('shoot');
                 shootsPos = shootsPos.filter(shoot => shoot !== arrayClasses[0]);
-                console.log(shootsPos);
                 shoots --;
             }else {
                 $(shootCell).addClass('shoot');
                 shoots ++;
                 shootsPos.push(arrayClasses[0]);
             }
-            if(shoots >= 5) {
+
+            if(shoots == 5) {
+                //console.log(shootsPos);
                 $("#fire-salvos").removeAttr("disabled");
             }
         }
     }
 }
-var turn = 0;
-function setSalvoData() {
-    turn ++;
-    let salvoData = {'turn':turn,'locations':shootsPos};
-    console.log(salvoData);
-    $("#fire-salvos").attr("disabled", true);
-    sendSalvo(salvoData);
-}
 
-function sendSalvo(salvoData) {
-    let gpId = $.urlParam('gp');
+function sendSalvo(gpId) {
+    $("#fire-salvos").attr("disabled", true);
     let poster = "/api/games/players/" + gpId + "/salvos";
-    console.log(poster);
     $.post({
       url: poster,
-      data: JSON.stringify(salvoData),
+      data: JSON.stringify(shootsPos),
       dataType: "text",
       contentType: "application/json"
     })
     .done(function (response, status, jqXHR) {
         let loader = "http://localhost:8080/api/game_view/" + gpId;
         $.get(loader)
-        .done(function() {
+        .done(function(xhr) {
             location.reload();
         });
     });

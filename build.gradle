@@ -29,6 +29,7 @@ dependencies {
 	compile('org.springframework.boot:spring-boot-starter-web')
 	compile("org.springframework.boot:spring-boot-starter-security")
 	runtime('com.h2database:h2')
+//	compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.6'
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 bootRun {

@@ -1,4 +1,5 @@
 $(function () {
+//    setInterval(function(){
     $.getJSON("http://localhost:8080/api/games", function(dataGames) {
         if(dataGames.player != null) {
             $('#invalid-msg').addClass('hide');
@@ -15,6 +16,7 @@ $(function () {
     $('#logout-button').click(logout);
     $('#new-player').click(newPlayer);
     $('#new-game').click(createGame);
+//    }, 5000);
 });
 
 function paintGames(dataGames) {

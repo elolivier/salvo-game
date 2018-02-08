@@ -68,13 +68,13 @@ public class SalvoApplication {
             List<String> sal1_loc1_1 = new ArrayList<>(Arrays.asList("F2", "H1", "A1"));
             List<String> sal1_loc2_1 = new ArrayList<>(Arrays.asList("F6", "C3", "C2"));
             List<String> sal1_loc1_2 = new ArrayList<>(Arrays.asList("J4", "G2", "H2"));
-            List<String> sal1_loc2_2 = new ArrayList<>(Arrays.asList("C7", "A3", "D4"));
+            List<String> sal1_loc2_2 = new ArrayList<>(Arrays.asList("C7", "A3", "C4"));
             Salvo salvo1_1 = new Salvo(1, sal1_loc1_1, gamePlayer1);
             Salvo salvo1_2 = new Salvo(1, sal1_loc2_1, gamePlayer2);
             Salvo salvo1_3 = new Salvo(2, sal1_loc1_2, gamePlayer1);
             Salvo salvo1_4 = new Salvo(2, sal1_loc2_2, gamePlayer2);
-            Score score1 = new Score(game1, player1, 1.0);
-            Score score2 = new Score(game1, player2, 0.0);
+//            Score score1 = new Score(game1, player1, 1.0);
+//            Score score2 = new Score(game1, player2, 0.0);
             Score score3 = new Score(game2, player3, 0.5);
             Score score4 = new Score(game2, player4, 0.5);
             Score score5 = new Score(game3, player2, 0.0);
@@ -104,8 +104,8 @@ public class SalvoApplication {
             repSalvo.save(salvo1_2);
             repSalvo.save(salvo1_3);
             repSalvo.save(salvo1_4);
-            repScore.save(score1);
-            repScore.save(score2);
+//            repScore.save(score1);
+//            repScore.save(score2);
             repScore.save(score3);
             repScore.save(score4);
             repScore.save(score5);
