@@ -11,6 +11,9 @@ buildscript {
 }
 
 apply plugin: 'java'
+
+apply plugin:'application'
+
 apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 
@@ -30,8 +33,14 @@ dependencies {
 	compile("org.springframework.boot:spring-boot-starter-security")
 	runtime('com.h2database:h2')
 //	compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.6'
+//	compile("org.springframework.boot:spring-boot-starter-data-mongodb")
 	testCompile('org.springframework.boot:spring-boot-starter-test')
+//	runtime "org.slf4j:slf4j-simple:1.7.25"
 }
 bootRun {
     addResources = true
+}
+
+task stage {
+	dependsOn installDist
 }
