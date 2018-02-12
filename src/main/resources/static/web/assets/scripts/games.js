@@ -1,6 +1,6 @@
 $(function () {
 //    setInterval(function(){
-    $.getJSON("http://localhost:8080/api/games", function(dataGames) {
+    $.getJSON("../api/games", function(dataGames) {
         if(dataGames.player != null) {
             $('#invalid-msg').addClass('hide');
             $('#logout-button').removeClass('hide');
@@ -9,7 +9,7 @@ $(function () {
         }
         paintGames(dataGames);
     });
-    $.getJSON("http://localhost:8080/api/leaderboard", function(players) {
+    $.getJSON("../api/leaderboard", function(players) {
         paintLeaderBoard(players);
     });
     $('#login-submit').click(login);
@@ -176,7 +176,7 @@ function joinGame() {
     let pidFe = this.id.charAt(2);
     $.post("/api/join",{ gid: gidFe, pid: pidFe })
     .done(function(xhr) {
-        window.location.assign("http://localhost:8080/web/game.html?gp=" + xhr.GamePlayerId);
+        window.location.assign("../web/game.html?gp=" + xhr.GamePlayerId);
     })
     .fail(function(xhr, status) {
 
@@ -188,7 +188,7 @@ function playGame() {
     let pidFe = this.id.charAt(2);
     $.get("/api/play",{ gid: gidFe, pid: pidFe })
     .done(function(xhr) {
-        window.location.assign("http://localhost:8080/web/game.html?gp=" + xhr.GamePlayerId);
+        window.location.assign("../web/game.html?gp=" + xhr.GamePlayerId);
     })
     .fail(function(xhr, status) {
 
@@ -203,7 +203,7 @@ function viewGame() {
 function createGame() {
     $.post("/api/new")
     .done(function(xhr) {
-        window.location.assign("http://localhost:8080/web/game.html?gp=" + xhr.GamePlayerId);
+        window.location.assign("../web/game.html?gp=" + xhr.GamePlayerId);
     })
     .fail(function(xhr, status) {
 
