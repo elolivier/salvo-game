@@ -3,7 +3,7 @@ $(function () {
 
     //Getting GamePlayer parameter from URL
     let gpId = $.urlParam('gp');
-    let loader = "http://localhost:8080/api/game_view/" + gpId;
+    let loader = "../api/game_view/" + gpId;
 
     $.get(loader)
     .done(function(xhr) {
@@ -96,8 +96,7 @@ $(function () {
         //$('#div-button').removeClass('col-sm-6').addClass('col-sm-12');
     });
 
-    //$('table tr td:last-child').css('padding-left', '3px');
-    //$('table tr td:last-child').css('padding-right', '3px');
+    //$('table tr td:last-child').css({ 'padding-left':'10px', 'padding-right':'10px' });
 
     //buttons listener
     $('#logout-button').click(logout);
@@ -114,7 +113,7 @@ $(function () {
             let dataGamePlayers = dataGame.gamePlayers;
             let gameStatus = dataGame.stateOfGame;
 
-//            if(gameStatus != 5) {
+//            if(gameStatus != 5 && $('table tr td').hasClass('onClickable')) {
 //                $('table tr td').removeClass('onClickable');
 //                $('table tr td').addClass('offClickable');
 //            }
@@ -127,7 +126,7 @@ $(function () {
             $('#info-game, #grids').empty();
             $('h1').html(status + ': ' + xhr.responseJSON.error);
         });
-    }, 5000);
+    }, 3000);
 });
 
 function testStatus(dataSalvos, gpId, dataGamePlayers, gameStatus) {
@@ -138,7 +137,7 @@ function testStatus(dataSalvos, gpId, dataGamePlayers, gameStatus) {
     }else if(gameStatus == 4) {
         $('#grid-salvos').addClass('not-your-turn');
         $('#left-table-tittle').html('<h2>Your field</h2>');
-        $('#right-table-tittle').html('<h2>Opponent field</h2>');
+        $('#right-table-tittle').html('<h2>Opponent shooting</h2>');
         paintSalvos(dataSalvos, gpId, dataGamePlayers);
     }else if(gameStatus == 5) {
         $('#grid-salvos').removeClass('no-opponent');
@@ -154,10 +153,10 @@ function testStatus(dataSalvos, gpId, dataGamePlayers, gameStatus) {
         paintSalvos(dataSalvos, gpId, dataGamePlayers);
     }
     else if(gameStatus == 6) {
-        window.location.assign("http://localhost:8080/web/lose.html");
+        window.location.assign("../web/games.html");
     }
     else if(gameStatus == 7) {
-        window.location.assign("http://localhost:8080/web/win.html");
+        window.location.assign("../web/games.html");
     }
 }
 
@@ -171,11 +170,11 @@ function placeShipsPage() {
 function paintInfoGame() {
     let fillInfo = '';
     fillInfo += '<div id="grid-global">';
-    fillInfo += '<img src="assets/images/boat1.jpg" id="aircraft-carrier" draggable="true" ondragstart="dragstart(this, event)" ondrag="drag(this, event)">';
-    fillInfo += '<img src="assets/images/battleship.jpg" id="battleship" draggable="true" ondragstart="dragstart(this, event)" ondrag="drag(this, event)">';
-    fillInfo += '<img src="assets/images/boat2.jpg" id="submarine" draggable="true" ondragstart="dragstart(this, event)" ondrag="drag(this, event)">';
-    fillInfo += '<img src="assets/images/boat3.jpg" id="destroyer" draggable="true" ondragstart="dragstart(this, event)" ondrag="drag(this, event)">';
-    fillInfo += '<img src="assets/images/boat4.jpg" id="patrol-boat" draggable="true" ondragstart="dragstart(this, event)" ondrag="drag(this, event)"></div>'
+    fillInfo += '<img src="assets/images/aircraft-1.png" id="aircraft-carrier" draggable="true" ondragstart="dragstart(this, event)" ondrag="drag(this, event)">';
+    fillInfo += '<img src="assets/images/battleship-2.png" id="battleship" draggable="true" ondragstart="dragstart(this, event)" ondrag="drag(this, event)">';
+    fillInfo += '<img src="assets/images/submarine-3.png" id="submarine" draggable="true" ondragstart="dragstart(this, event)" ondrag="drag(this, event)">';
+    fillInfo += '<img src="assets/images/submarine-3.png" id="destroyer" draggable="true" ondragstart="dragstart(this, event)" ondrag="drag(this, event)">';
+    fillInfo += '<img src="assets/images/patrol-2.png" id="patrol-boat" draggable="true" ondragstart="dragstart(this, event)" ondrag="drag(this, event)"></div>'
     return fillInfo;
 }
 
@@ -230,34 +229,44 @@ $.urlParam = function(name){
 }
 
 function paintShips(dataShips) {
+    //console.log(dataShips);
     $(dataShips).each(function(i, ship) {
-        /*let dataLocation = ship.locations;
-        console.log(ship);
-        switch(ship.type) {
-        		case 'aircraft-carrier':
-        		console.log(dataLocation[0]);
-        		    $('td .'+dataLocation[0]).appendChild('<img src="assets/images/boat1.jpg" id="aircraft-carrier">');
-        		break;
-        		case 'battleship':
-
-        		break;
-        		case 'submarine':
-
-        		break;
-        		case 'destroyer':
-
-        		break;
-        		case 'patrol-boat':
-
-        		break;
-        	}*/
-        let dataLocation = ship.locations;
-        $(dataLocation).each(function(j, cell) {
-            let selectTable = "#grid-ships " + "."+cell;
-            if(!$(selectTable).hasClass("hit-on-me")) {
-                $(selectTable).addClass('background-blue');
+        //let dataLocation = ship.locations;
+        let selectTable = "#grid-ships " + "."+ship.locations[0];
+        //console.log(i);
+        if(ship.type == 'aircraft-carrier') {
+            if(ship.locations[0].charAt(0) == ship.locations[1].charAt(0)) {
+                $(selectTable).append('<img src="assets/images/aircraft-1.png" id="aircraft-carrier1">');
+            }else {
+                $(selectTable).append('<img src="assets/images/aircraft-1.png" id="aircraft-carrier1">');
+                $('#aircraft-carrier1').addClass('rotated');
+                $('#aircraft-carrier1').css({ 'top': '78px', 'left': '-66px', 'max-height': '28px' });
             }
-        });
+        }else if(ship.type == 'battleship') {
+            if(ship.locations[0].charAt(0) == ship.locations[1].charAt(0)) {
+                $(selectTable).append('<img src="assets/images/battleship-2.png" id="battleship1">');
+            }else {
+                $(selectTable).append('<img src="assets/images/battleship-2.png" id="battleship1">');
+                $('#battleship1').addClass('rotated');
+                $('#battleship1').css({ 'top': '63px', 'left': '-55px', 'max-height': '30px' });
+            }
+        }else if(ship.type == 'submarine' || ship.type == 'destroyer'){
+            if(ship.locations[0].charAt(0) == ship.locations[1].charAt(0)) {
+                $(selectTable).append('<img src="assets/images/submarine-3.png" id="submarine1">');
+            }else {
+                $(selectTable).append('<img src="assets/images/submarine-3.png" id="submarine1">');
+                $('#submarine1').addClass('rotated');
+                $('#submarine1').css({ 'top': '46px', 'left': '-39px', 'max-height': '27px' });
+            }
+        }else if(ship.type == 'patrol-boat'){
+            if(ship.locations[0].charAt(0) == ship.locations[1].charAt(0)) {
+                $(selectTable).append('<img src="assets/images/patrol-2.png" id="patrol-boat1">');
+            }else {
+                $(selectTable).append('<img src="assets/images/patrol-2.png" id="patrol-boat1">');
+                $('#patrol-boat1').addClass('rotated');
+                $('#patrol-boat1').css({ 'top': '26px', 'left': '-20px', 'max-height': '28px' });
+            }
+        }
     });
 }
 
@@ -302,7 +311,11 @@ function hitShip(turn, ships) {
             let selectTable2 = "#grid-ships " + "."+cell;
             $(selectTable2).addClass('hit-on-me');
             $(selectTable2).removeClass('background-blue');
-            $(selectTable2).html(turn);
+            if ($(selectTable2).is(':empty')) {
+                $(selectTable2).html(turn);
+            }else if($(selectTable2).text() == '' && $(selectTable2).find('> img').length) {
+                $(selectTable2).append(turn);
+            }
         });
     });
 }
@@ -326,7 +339,7 @@ function logout(evt) {
 }
 
 function backHome() {
-    window.location.assign("http://localhost:8080/web/games.html");
+    window.location.assign("../web/games.html");
 }
 
 function sendShips(shipsInfo) {
@@ -339,7 +352,7 @@ function sendShips(shipsInfo) {
       contentType: "application/json"
     })
     .done(function (response, status, jqXHR) {
-        let loader = "http://localhost:8080/api/game_view/" + gpId;
+        let loader = "../api/game_view/" + gpId;
         $.get(loader)
         .done(function() {
             location.reload();
@@ -642,7 +655,7 @@ function sendSalvo(gpId) {
       contentType: "application/json"
     })
     .done(function (response, status, jqXHR) {
-        let loader = "http://localhost:8080/api/game_view/" + gpId;
+        let loader = "../api/game_view/" + gpId;
         $.get(loader)
         .done(function(xhr) {
             location.reload();
